@@ -10,7 +10,8 @@ import {
     comprobarToken,
     restablecerPassword,
     verPerfil,
-    modificarDatos
+    modificarDatos,
+    reenviarCorreoConfirmacion
 } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -54,6 +55,7 @@ router.get('/usuario/confirmarUsuario/:token_usuario', confirmarUsuario);
 router.post('/usuario/olvidePassword', olvidePassword)
 router.get('/usuario/comprobarToken/:token_usuario', comprobarToken)
 router.post('/usuario/reestablecerPassword/:token_usuario', restablecerPassword)
+router.post('/usuario/reenviarCorreoConfirmacion', reenviarCorreoConfirmacion);
 // Ver y modificar información
 router.get('/usuario/verPerfil', checkAuth, verPerfil)
 router.post('/usuario/modificarDatos', checkAuth, modificarDatos)
@@ -88,5 +90,10 @@ router.post('/paginaWeb/bloquearPagina', checkAuth, bloquearPagina)
 router.delete('/paginaWeb/desbloquearPagina/:id_pagina', checkAuth, desbloquearPagina)
 router.post('/paginaWeb/bloquearPaginaEquipo/:id_equipo', checkAuth, bloquearPaginaEquipo)
 router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkAuth, desbloquearPaginaEquipo)
+
+/* Auth Check */
+router.get('/auth/check', checkAuth, (req, res) => {
+    res.status(200).json({ msg: 'Authenticated' });
+});
 
 export default router
