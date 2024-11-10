@@ -18,8 +18,17 @@ import {
     verProyectos,
     verProyecto,
     crearProyecto,
-    proporcionarDetalles
+    proporcionarDetalles,
+    modificarProyecto
 } from '../handlers/proyecto'
+/* Funciones Etapa */
+import {
+    verEtapas,
+    verEtapa,
+    agregarEtapa,
+    modificarEtapa,
+    eliminarEtapa
+} from '../handlers/etapas'
 /* Funciones de Equipo */
 import { 
     verEquipos,
@@ -72,17 +81,26 @@ router.get('/proyecto/misProyectos/:nombre_proyecto', checkAuth, verProyecto)
 // Creación del proyecto
 router.post('/proyecto/crearProyecto', checkAuth, crearProyecto)
 router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarDetalles)
+router.put('/proyecto/modificarProyecto/:nombre_proyecto', checkAuth, modificarProyecto)
+
+/* Etapa */
+// Visualizar etapas
+router.get('/etapa/verEtapas/:nombre_proyecto', checkAuth, verEtapas)
+router.get('/etapa/verEtapa/:id_etapa', checkAuth, verEtapa)
+router.post('/etapa/agregarEtapa/:nombre_proyecto', checkAuth, agregarEtapa)
+router.put('/etapa/modificarEtapa/:id_etapa', checkAuth, modificarEtapa)
+router.delete('/etapa/eliminarEtapa/:id_etapa', checkAuth, eliminarEtapa)
 
 /* Equipo */
 // Crear y gestionar equipo
 router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
 router.get('/equipo/aceptarInvitacion/:token_UE', aceptarInvitacion)
-router.put('/equipo/misEquipos/:nombre_equipo/asignarRoles', checkAuth, asignarRoles)
-router.put('/equipo/misEquipos/:nombre_equipo/agregarMiembro', checkAuth, agregarMiembro)
-router.delete('/equipo/misEquipos/:nombre_equipo/eliminarMiembro', checkAuth, eliminarMiembro)
+router.put('/equipo/misEquipos/:id_equipo/asignarRoles', checkAuth, asignarRoles)
+router.put('/equipo/misEquipos/:id_equipo/agregarMiembro', checkAuth, agregarMiembro)
+router.delete('/equipo/misEquipos/:id_equipo/eliminarMiembro', checkAuth, eliminarMiembro)
 // Ver equipos
 router.get('/equipo/misEquipos', checkAuth, verEquipos)
-router.get('/equipo/misEquipos/:nombre_equipo', checkAuth, verEquipo)
+router.get('/equipo/misEquipos/:id_equipo', checkAuth, verEquipo)
 
 /* Riesgo */
 router.post('/riesgo/crearRiesgo/:nombre_proyecto', checkAuth, crearRiesgo)

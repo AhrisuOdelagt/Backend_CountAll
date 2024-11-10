@@ -42,7 +42,7 @@ Se ha agregado la ruta «/usuario/verPerfil»    --TESTED
 Se ha agregado la ruta «/usuario/modificarDatos»    --TESTED
 
 
------ COMMIT    09/11/2024 -----
+----- COMMIT (1)    09/11/2024 -----
 --- HANDLERS ---
 - riesgo.ts -
 Se ha creado el Handler riesgo.ts    --TESTED
@@ -78,3 +78,43 @@ Se ha agregado la ruta «/paginaWeb/bloquearPagina»    --TESTED
 Se ha agregado la ruta «/paginaWeb/desbloquearPagina/:id_pagina»    --TESTED
 Se ha agregado la ruta «/paginaWeb/bloquearPaginaEquipo/:id_equipo»    --TESTED
 Se ha agregado la ruta «/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina»    --TESTED
+
+
+----- COMMIT (2)    09/11/2024 -----
+--- HANDLERS ---
+- equipo.ts -
+La función verEquipo se ha modificado para funcionar con el id y no con el nombre    --TESTED
+La función asignarRoles se ha modificado para funcionar con el id y no con el nombre    --TESTED
+La función agregarMiembro se ha modificado para funcionar con el id y no con el nombre    --TESTED
+La función eliminarMiembro se ha modificado para funcionar con el id y no con el nombre    --TESTED
+
+- proyecto.ts -
+La función proporcionarDetalles ahora ajusta las fechas de las etapas en función de las del proyecto    -- TESTED
+Se ha creado la función modificarProyecto    -- TESTED
+
+- etapas.ts -
+Se ha creado el handler etapas.ts    --TESTED
+Se ha creado la función verEtapas    --TESTED
+Se ha creado la función verEtapa    --TESTED
+Se ha creado la función agregarEtapa    --TESTED
+Se ha creado la función modificarEtapa    --TESTED
+Se ha creado la función eliminarEtapa    --TESTED
+
+--- HELPERS ---
+- emails.ts -
+Se creado el email emailProyectoModificado    --TESTED
+Se creado el email emailEtapaAgregada    --TESTED
+Se creado el email emailEtapaModificada    --TESTED
+Se creado el email emailEtapaEliminada    --TESTED
+
+--- ROUTES ---
+Se ha agregado la ruta «/proyecto/modificarProyecto/:nombre_proyecto»    --TESTED
+Se ha agregado la ruta «/etapa/verEtapas/:nombre_proyecto»    --TESTED
+Se ha agregado la ruta «/etapa/verEtapa/:id_etapa»    --TESTED
+Se ha agregado la ruta «/etapa/agregarEtapa/:nombre_proyecto»    --TESTED
+Se ha agregado la ruta «/etapa/modificarEtapa/:id_etapa»    --TESTED
+Se ha agregado la ruta «/etapa/eliminarEtapa/:id_etapa»    --TESTED
+Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/asignarRoles»    --TESTED
+Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/agregarMiembro»    --TESTED
+Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/eliminarMiembro»    --TESTED
+Se ha modificado la ruta «/equipo/misEquipos/:id_equipo»    --TESTED

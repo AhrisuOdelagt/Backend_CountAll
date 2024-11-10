@@ -65,12 +65,11 @@ const verEquipo = async (req, res) => {
     }
 
     // Retornamos información de un equipo
-    const { nombre_equipo } = req.params
+    const { id_equipo } = req.params
     try {
         // Encontramos al equipo
         const equipoEncontrado = await Equipo.findOne({
-            where: { nombre_equipo: nombre_equipo },
-            attributes: ['id_equipo', 'nombre_equipo', 'descr_equipo']
+            where: { id_equipo: id_equipo }
         })
 
         // Encontramos usuarios y roles relacionados con el equipo
@@ -281,11 +280,11 @@ const asignarRoles = async (req, res) => {
     await check('rol').notEmpty().withMessage('Campo de rol vacío').run(req)
 
     // Retornamos información de un equipo
-    const { nombre_equipo } = req.params
+    const { id_equipo } = req.params
     try {
         // Encontramos al equipo
         const equipoEncontrado = await Equipo.findOne({
-            where: { nombre_equipo: nombre_equipo },
+            where: { id_equipo: id_equipo },
             attributes: ['id_equipo', 'nombre_equipo', 'descr_equipo']
         })
         if (!equipoEncontrado) {
@@ -362,7 +361,7 @@ const agregarMiembro = async (req, res) => {
     try {
         // Encontramos el equipo
         const equipoEncontrado = await Equipo.findOne({
-            where: { nombre_equipo: req.params.nombre_equipo },
+            where: { id_equipo: req.params.id_equipo },
             attributes: ['id_equipo', 'nombre_equipo']
         })
         if (!equipoEncontrado) {
@@ -450,7 +449,7 @@ const eliminarMiembro = async (req, res) => {
     try {
         // Encontramos el equipo
         const equipoEncontrado = await Equipo.findOne({
-            where: { nombre_equipo: req.params.nombre_equipo },
+            where: { id_equipo: req.params.id_equipo },
             attributes: ['id_equipo', 'nombre_equipo']
         })
         if (!equipoEncontrado) {
