@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, Default, PrimaryKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, Default, PrimaryKey, BelongsTo } from 'sequelize-typescript';
 import { generarTokenAleatorio } from '../helpers/functions';
 import Usuario from './Usuario.model';
 import Equipo from './Equipo.model';
@@ -68,6 +68,12 @@ class UsuarioEquipo extends Model {
         type: DataType.INTEGER
     })
     id_equipo_fk_UE: number;
+
+    @BelongsTo(() => Usuario)
+    usuario: Usuario;
+
+    @BelongsTo(() => Equipo)
+    equipo: Equipo;
 }
 
 export default UsuarioEquipo;

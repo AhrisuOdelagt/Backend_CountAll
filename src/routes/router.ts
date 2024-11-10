@@ -44,6 +44,11 @@ import {
     desbloquearPaginaEquipo,
     verPaginasBloqueadas
 } from '../handlers/paginaWeb'
+/* Funciones de clasificación */
+import {
+    obtenerClasificaciones
+} from '../handlers/clasificacion'
+
 
 const router = Router()
 
@@ -90,6 +95,9 @@ router.post('/paginaWeb/bloquearPagina', checkAuth, bloquearPagina)
 router.delete('/paginaWeb/desbloquearPagina/:id_pagina', checkAuth, desbloquearPagina)
 router.post('/paginaWeb/bloquearPaginaEquipo/:id_equipo', checkAuth, bloquearPaginaEquipo)
 router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkAuth, desbloquearPaginaEquipo)
+
+/* Clasificación */
+router.get('/clasificaciones', checkAuth, obtenerClasificaciones);
 
 /* Auth Check */
 router.get('/auth/check', checkAuth, (req, res) => {
