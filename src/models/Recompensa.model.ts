@@ -25,7 +25,13 @@ class Recompensa extends Model {
     @Column({
         type: DataType.STRING(256)
     })
-    tipo_recompensa: string;
+    rareza: string; 
+
+    @Column({
+        type: DataType.STRING(256),
+        allowNull: true // Permitir valores nulos
+    })
+    url_avatar: string;
 
     @HasMany(() => UsuarioRecompensa)
     usuarioRecompensas: UsuarioRecompensa[];

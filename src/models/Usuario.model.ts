@@ -70,6 +70,11 @@ class Usuario extends Model {
     })
     is_confirmed: boolean
 
+    @Column({
+        type: DataType.STRING(256)
+    })
+    url_avatar: string;
+
     @HasMany(() => UsuarioEquipo)
     usuarioEquipos: UsuarioEquipo[];
 

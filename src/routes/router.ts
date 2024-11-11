@@ -57,6 +57,12 @@ import {
 import {
     obtenerClasificaciones
 } from '../handlers/clasificacion'
+/* Funciones de recompensa */
+import { 
+    otorgarRecompensa, 
+    cambiarAvatar,
+    obtenerRecompensas
+}   from '../handlers/recompensa'
 
 
 const router = Router()
@@ -116,6 +122,11 @@ router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkA
 
 /* Clasificación */
 router.get('/clasificaciones', checkAuth, obtenerClasificaciones);
+
+/* Recompensa */
+router.get('/obtenerRecompensas', obtenerRecompensas);
+router.post('/otorgar-recompensa', otorgarRecompensa);
+router.post('/cambiar-avatar', cambiarAvatar);
 
 /* Auth Check */
 router.get('/auth/check', checkAuth, (req, res) => {
