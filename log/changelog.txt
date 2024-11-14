@@ -118,3 +118,22 @@ Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/asignarRoles»    --TES
 Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/agregarMiembro»    --TESTED
 Se ha modificado la ruta «/equipo/misEquipos/:id_equipo/eliminarMiembro»    --TESTED
 Se ha modificado la ruta «/equipo/misEquipos/:id_equipo»    --TESTED
+
+
+----- COMMIT    13/11/2024 -----
+--- HANDLERS ---
+- estimacion.ts -
+Se ha creado el handler estimacion.ts    --TESTED
+Se ha creado la función realizarCOCOMO    --TESTED
+Se ha creado la función verCOCOMO    --TESTED
+
+--- proyecto.ts ---
+verProyecto ahora muestra las estimaciones del proyecto    --TESTED
+Se ha corregido un error en modificarProyecto que reiniciaba las etapas aunque se estableciera el mismo número    --TESTED
+
+--- MODELS ---
+Se ha creado el modelo Estimacion y se ha vinculado con Proyecto    --TESTED
+
+--- ROUTES ---
+Se ha agregado la ruta «/estimacion/realizarCOCOMO/:nombre_proyecto»    --TESTED
+Se ha agregado la ruta «/estimacion/verCOCOMO/:id_estimacion»    --TESTED

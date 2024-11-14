@@ -57,6 +57,7 @@ import {
 import {
     obtenerClasificaciones
 } from '../handlers/clasificacion'
+<<<<<<< HEAD
 /* Funciones de recompensa */
 import { 
     otorgarRecompensa, 
@@ -64,6 +65,12 @@ import {
     obtenerRecompensas
 }   from '../handlers/recompensa'
 
+=======
+import {
+    realizarCOCOMO,
+    verCOCOMO
+} from '../handlers/estimacion'
+>>>>>>> e8e211c (Estimaciones completas)
 
 const router = Router()
 
@@ -123,10 +130,16 @@ router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkA
 /* Clasificación */
 router.get('/clasificaciones', checkAuth, obtenerClasificaciones);
 
+<<<<<<< HEAD
 /* Recompensa */
 router.get('/obtenerRecompensas', obtenerRecompensas);
 router.post('/otorgar-recompensa', otorgarRecompensa);
 router.post('/cambiar-avatar', cambiarAvatar);
+=======
+/* Estimación */
+router.post('/estimacion/realizarCOCOMO/:nombre_proyecto', checkAuth, realizarCOCOMO)
+router.get('/estimacion/verCOCOMO/:id_estimacion', checkAuth, verCOCOMO)
+>>>>>>> e8e211c (Estimaciones completas)
 
 /* Auth Check */
 router.get('/auth/check', checkAuth, (req, res) => {

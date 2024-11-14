@@ -4,6 +4,7 @@ import Usuario from '../models/Usuario.model'
 import Etapa from '../models/Etapa.model'
 import Tarea from '../models/Tarea.model'
 import Riesgo from '../models/Riesgo.model'
+import Estimacion from '../models/Estimacion.model'
 import EquipoProyecto from '../models/EquipoProyecto.model'
 import UsuarioEquipo from '../models/UsuarioEquipo.model'
 import { emailProyectoModificado } from '../helpers/emails'
@@ -61,11 +62,18 @@ const verProyecto = async (req, res) => {
             attributes: ['id_riesgo', 'nombre_riesgo', 'descr_riesgo', 'prob_riesgo']
         })
 
+        // Obtenemos la estimación asociada con el proyecto
+        const estimacionesProyecto = await Estimacion.findOne({
+            where: { id_estimacion_fk_proyecto: proyectoEncontrado.dataValues.id_proyecto },
+            attributes: ['id_estimacion', 'puntos_funcion', 'loc', 'personas_estimacion', 'tiempo_estimacion', 'precio_estimacion']
+        })
+
         // Verificamos que se haya encontrado un proyecto y lo enviamos de vuelta
         if (proyectoEncontrado) {
             res.json({
                 proyecto: proyectoEncontrado,
-                riesgos_proyecto: riesgosProyecto
+                riesgos_proyecto: riesgosProyecto,
+                estimaciones_proyecto: estimacionesProyecto
             })
         }
         else {
@@ -265,7 +273,7 @@ const modificarProyecto = async (req, res) => {
         );
 
         // Si se especifica Scrum, actualizamos o creamos las etapas correspondientes
-        if (metodologia_proyecto === 'Scrum') {
+        if (metodologia_proyecto === 'Scrum' && numero_etapas_proyecto !== proyectoEncontrado.dataValues.numero_etapas_proyecto) {
             const startDate = new Date(fecha_inicio_proyecto);
             const endDate = new Date(fecha_fin_proyecto);
             const totalDuration = endDate.getTime() - startDate.getTime();
