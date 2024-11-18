@@ -29,7 +29,7 @@ class Recompensa extends Model {
 
     @Column({
         type: DataType.STRING(256),
-        allowNull: true // Permitir valores nulos
+        field: 'url_avatar'
     })
     url_avatar: string;
 

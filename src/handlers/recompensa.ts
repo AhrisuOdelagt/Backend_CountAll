@@ -13,7 +13,7 @@ export const obtenerRecompensas = async (req: Request, res: Response) => {
     }
 };
 
-export const otorgarRecompensa = async (req, res) => {
+export const otorgarRecompensa = async (req: Request, res: Response) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
@@ -37,17 +37,30 @@ export const otorgarRecompensa = async (req, res) => {
     }
 };
 
-export const cambiarAvatar = async (req, res) => {
+
+
+export const cambiarAvatar = async (req: Request, res: Response) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
+        // Buscar usuario
         const usuario = await Usuario.findByPk(id_usuario);
+        
+        // Buscar recompensa
         const recompensa = await Recompensa.findByPk(id_recompensa);
 
-        if (!usuario || !recompensa) {
-            return res.status(404).json({ error: 'Usuario o recompensa no encontrados' });
+        // Log para debug
+        console.log('Datos de la recompensa:', recompensa?.toJSON());
+
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
+        if (!recompensa) {
+            return res.status(404).json({ error: 'Recompensa no encontrada' });
+        }
+
+        // Verificar si el usuario tiene la recompensa
         const usuarioRecompensa = await UsuarioRecompensa.findOne({
             where: {
                 id_usuario_fk_UR: id_usuario,
@@ -59,14 +72,24 @@ export const cambiarAvatar = async (req, res) => {
             return res.status(400).json({ error: 'El usuario no posee esta recompensa' });
         }
 
-        const avatarUrl = recompensa.url_avatar || 'src/assets/img/avatars/A1.jpg'; // Usar imagen por defecto si no hay URL
+        // Verificar que la recompensa tenga una URL de avatar (modificado)
+        if (!recompensa.getDataValue('url_avatar')) {
+            return res.status(400).json({ 
+                error: 'La recompensa no tiene una URL de avatar válida',
+                recompensa_id: id_recompensa,
+                url_actual: recompensa.getDataValue('url_avatar')
+            });
+        }
 
-        await Usuario.update(
-            { url_avatar: avatarUrl },
-            { where: { id_usuario } }
-        );
+        const nuevaUrl = recompensa.getDataValue('url_avatar');
+        
+        // Actualizar el avatar del usuario
+        await usuario.update({ url_avatar: nuevaUrl });
 
-        res.status(200).json({ msg: 'Avatar cambiado exitosamente' });
+        res.status(200).json({ 
+            msg: 'Avatar cambiado exitosamente',
+            nuevo_avatar: nuevaUrl
+        });
     } catch (error) {
         console.error('Error cambiando avatar:', error);
         res.status(500).json({ error: 'Error cambiando avatar' });
