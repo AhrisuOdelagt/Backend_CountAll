@@ -13,7 +13,7 @@ export const obtenerRecompensas = async (req: Request, res: Response) => {
     }
 };
 
-export const otorgarRecompensa = async (req: Request, res: Response) => {
+export const otorgarRecompensa = async (req, res) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
@@ -39,7 +39,7 @@ export const otorgarRecompensa = async (req: Request, res: Response) => {
 
 
 
-export const cambiarAvatar = async (req: Request, res: Response) => {
+export const cambiarAvatar = async (req, res) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
