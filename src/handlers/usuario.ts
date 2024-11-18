@@ -276,6 +276,27 @@ const verPerfil = async (req, res) => {
     }
 }
 
+const obtenerUsuarioActual = async (req, res) => {
+    const usuario = req.usuario;
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' });
+    }
+
+    try {
+        const info_usuario = {
+            id_usuario: usuario.dataValues.id_usuario,
+            nombre_usuario: usuario.dataValues.nombre_usuario,
+            name_usuario: usuario.dataValues.name_usuario,
+            surname_usuario: usuario.dataValues.surname_usuario,
+            url_avatar: usuario.dataValues.url_avatar
+        };
+        res.json(info_usuario);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: 'Error al obtener la información del usuario' });
+    }
+};
+
 const modificarDatos = async (req, res) => {
     // Verificamos una sesión iniciada
     const usuario = req.usuario
@@ -333,5 +354,6 @@ export {
     reenviarCorreoConfirmacion,
     restablecerPassword,
     verPerfil,
-    modificarDatos
+    modificarDatos,
+    obtenerUsuarioActual
  }

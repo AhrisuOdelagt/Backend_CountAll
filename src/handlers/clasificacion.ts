@@ -8,7 +8,7 @@ export const obtenerClasificaciones = async (req: Request, res: Response) => {
             attributes: ['id_usuario_fk_UE', 'puntuacion_local', 'rol'],
             include: [{
                 model: Usuario,
-                attributes: ['id_usuario', 'nombre_usuario']
+                attributes: ['id_usuario', 'nombre_usuario', 'url_avatar']
             }],
             order: [['puntuacion_local', 'DESC']]
         });

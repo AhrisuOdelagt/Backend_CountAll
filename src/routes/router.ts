@@ -11,7 +11,8 @@ import {
     restablecerPassword,
     verPerfil,
     modificarDatos,
-    reenviarCorreoConfirmacion
+    reenviarCorreoConfirmacion,
+    obtenerUsuarioActual
 } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -82,6 +83,7 @@ router.post('/usuario/reestablecerPassword/:token_usuario', restablecerPassword)
 router.post('/usuario/reenviarCorreoConfirmacion', reenviarCorreoConfirmacion);
 // Ver y modificar información
 router.get('/usuario/verPerfil', checkAuth, verPerfil)
+router.get('/usuario/actual', checkAuth, obtenerUsuarioActual)
 router.post('/usuario/modificarDatos', checkAuth, modificarDatos)
 
 /* Proyecto */
