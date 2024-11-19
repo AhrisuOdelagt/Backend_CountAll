@@ -1,11 +1,12 @@
 /* Importación de módulos externos */
-// import { Request, Response } from "express"
 import { check, validationResult } from 'express-validator'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 /* Importación de módulos propios del proyecto */
 import Usuario from "../models/Usuario.model"
+import UsuarioRecompensa from '../models/UsuarioRecompensa.model'
+import Recompensa from '../models/Recompensa.model'
 import { generarTokenAleatorio } from '../helpers/functions'
 import { emailRegistro } from '../helpers/emails'
 
@@ -42,7 +43,22 @@ const registrarUsuario = async (req, res) => {
 
         // Guardar usuario en la BD
         const usuario = await Usuario.create({ ...req.body, password_usuario: hashedPassword })
-        
+
+        // Otorgar la recompensa por defecto
+        const recompensa = await Recompensa.findOne({ where: { id_recompensa : 3 } })
+        if (usuario && recompensa) {
+            await UsuarioRecompensa.create({
+                id_usuario_fk_UR: usuario.dataValues.id_usuario,
+                id_recompensa_fk_UR: recompensa.dataValues.id_recompensa,
+                fecha_obtencion: new Date()
+            })
+        } else {
+            console.error('No se pudo crear la recompensa del usuario:', {
+                usuario: usuario?.dataValues?.id_usuario,
+                recompensa: recompensa?.dataValues?.id_recompensa
+            })
+        }
+
         // Enviamos el correo de confirmación
         if (usuario) {
             try {
@@ -358,4 +374,4 @@ export {
     verPerfil,
     modificarDatos,
     obtenerUsuarioActual
- }
+}

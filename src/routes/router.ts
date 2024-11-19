@@ -151,9 +151,9 @@ router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkA
 router.get('/clasificaciones', checkAuth, obtenerClasificaciones);
 
 /* Recompensa */
-router.get('/obtenerRecompensas', obtenerRecompensas);
-router.post('/otorgar-recompensa', otorgarRecompensa);
-router.post('/cambiar-avatar', cambiarAvatar);
+router.get('/obtenerRecompensas/:id_usuario', checkAuth, obtenerRecompensas);
+router.post('/otorgar-recompensa', checkAuth, otorgarRecompensa);
+router.post('/cambiar-avatar', checkAuth, cambiarAvatar);
 
 /* Estimación */
 router.post('/estimacion/realizarCOCOMO/:nombre_proyecto', checkAuth, realizarCOCOMO)

@@ -76,6 +76,7 @@ class Usuario extends Model {
     })
     is_confirmed: boolean
 
+    @Default('src/assets/img/avatars/A1.jpg')
     @Column({
         type: DataType.STRING(256)
     })

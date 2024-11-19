@@ -4,8 +4,29 @@ import Recompensa from '../models/Recompensa.model';
 import Usuario from '../models/Usuario.model';
 
 const obtenerRecompensas = async (req, res) => {
+    const usuario = req.usuario
+
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' });
+    }
+
     try {
-        const recompensas = await Recompensa.findAll();
+        const recompensasUsuario = await UsuarioRecompensa.findAll({
+            where: { id_usuario_fk_UR: usuario.dataValues.id_usuario},
+            include: [{
+                model: Recompensa,
+                attributes: [
+                    'id_recompensa',
+                    'nombre_recompensa',
+                    'descr_recompensa',
+                    'rareza',
+                    'url_avatar'
+                ]
+            }]
+        });
+
+        const recompensas = recompensasUsuario.map((usuarioRecompensa) => usuarioRecompensa.dataValues.recompensa);
+
         res.status(200).json(recompensas);
     } catch (error) {
         console.error('Error obteniendo recompensas:', error);

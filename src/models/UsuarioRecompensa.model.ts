@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, PrimaryKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Recompensa from './Recompensa.model';
 
@@ -24,6 +24,12 @@ class UsuarioRecompensa extends Model {
         type: DataType.INTEGER
     })
     id_recompensa_fk_UR: number;
+
+    @BelongsTo(() => Usuario)
+    usuario: Usuario;
+
+    @BelongsTo(() => Recompensa)
+    recompensa: Recompensa;
 }
 
 export default UsuarioRecompensa;
