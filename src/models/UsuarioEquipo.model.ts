@@ -29,7 +29,25 @@ class UsuarioEquipo extends Model {
     @Column({
         type: DataType.DOUBLE
     })
+    puntuacion_provisional: number;
+
+    @Default(0)
+    @Column({
+        type: DataType.DOUBLE
+    })
     puntuacion_local: number;
+
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER
+    })
+    tareas_asignadas: number;
+
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER
+    })
+    tareas_completadas: number;
 
     @Default(DataType.NOW)
     @Column({

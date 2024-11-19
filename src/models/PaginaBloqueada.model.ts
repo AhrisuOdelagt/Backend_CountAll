@@ -12,14 +12,12 @@ class PaginaBloqueada extends Model {
     })
     nivel_bloqueo: number
 
-    @PrimaryKey
     @ForeignKey(() => Usuario)
     @Column({
         type: DataType.INTEGER
     })
     id_usuario_fk_bloqueo: number;
 
-    @PrimaryKey
     @ForeignKey(() => PaginaWeb)
     @Column({
         type: DataType.INTEGER

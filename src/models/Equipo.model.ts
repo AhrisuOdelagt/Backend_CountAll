@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, HasMany, BelongsToMany } from 'sequeliz
 import UsuarioEquipo from './UsuarioEquipo.model';
 import Proyecto from './Proyecto.model';
 import EquipoProyecto from './EquipoProyecto.model';
+import UsuarioTareaEquipo from './UsuarioTareaEquipo.model';
 
 @Table({
     tableName: 'equipo'
@@ -26,6 +27,9 @@ class Equipo extends Model {
 
     @HasMany(() => UsuarioEquipo)
     usuarioEquipos: UsuarioEquipo[];
+
+    @HasMany(() => UsuarioTareaEquipo)
+    usuarioTareaEquipos: UsuarioTareaEquipo[];
 
     @BelongsToMany(() => Proyecto, () => EquipoProyecto)
     proyectos: Proyecto[];

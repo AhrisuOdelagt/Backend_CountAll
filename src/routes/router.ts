@@ -69,6 +69,17 @@ import {
     realizarCOCOMO,
     verCOCOMO
 } from '../handlers/estimacion'
+/* Funciones de tareas */
+import {
+    verTareas,
+    verTarea,
+    asignarTarea,
+    editarTarea,
+    enviarTarea,
+    revisarTarea,
+    desbloquearTarea,
+    eliminarTarea
+} from '../handlers/tarea'
 
 const router = Router()
 
@@ -99,9 +110,19 @@ router.put('/proyecto/modificarProyecto/:nombre_proyecto', checkAuth, modificarP
 // Visualizar etapas
 router.get('/etapa/verEtapas/:nombre_proyecto', checkAuth, verEtapas)
 router.get('/etapa/verEtapa/:id_etapa', checkAuth, verEtapa)
+// Modificación de etapas
 router.post('/etapa/agregarEtapa/:nombre_proyecto', checkAuth, agregarEtapa)
 router.put('/etapa/modificarEtapa/:id_etapa', checkAuth, modificarEtapa)
 router.delete('/etapa/eliminarEtapa/:id_etapa', checkAuth, eliminarEtapa)
+
+/* Tarea */
+// Visualizar tareas
+router.get('/tarea/verTareas/:id_equipo', checkAuth, verTareas)
+router.get('/tarea/verTarea/:id_tarea', checkAuth, verTarea)
+router.post('/tarea/asignarTarea/:id_equipo', checkAuth, asignarTarea)
+// Manejar tareas
+
+// Entrega de tareas
 
 /* Equipo */
 // Crear y gestionar equipo

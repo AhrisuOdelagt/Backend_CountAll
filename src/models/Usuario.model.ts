@@ -1,10 +1,11 @@
 import { Table, Column, Model, DataType, HasMany, Default } from 'sequelize-typescript';
 import { generarTokenAleatorio } from '../helpers/functions'
 import UsuarioEquipo from './UsuarioEquipo.model';
-import UsuarioTarea from './UsuarioTarea.model';
+import UsuarioTareaEquipo from './UsuarioTareaEquipo.model';
 import UsuarioRecompensa from './UsuarioRecompensa.model';
 import Proyecto from './Proyecto.model';
 import PaginaBloqueada from './PaginaBloqueada.model';
+import Comentario from './Comentario.model';
 
 @Table({
     tableName: 'usuario'
@@ -64,6 +65,11 @@ class Usuario extends Model {
     })
     puntuacion_global: number
 
+    @Column({
+        type: DataType.STRING(256)
+    })
+    tareas_completadas_global: string;
+
     @Default(false)
     @Column({
         type: DataType.BOOLEAN
@@ -78,8 +84,8 @@ class Usuario extends Model {
     @HasMany(() => UsuarioEquipo)
     usuarioEquipos: UsuarioEquipo[];
 
-    @HasMany(() => UsuarioTarea)
-    usuarioTareas: UsuarioTarea[];
+    @HasMany(() => UsuarioTareaEquipo)
+    usuarioTareaEquipos: UsuarioTareaEquipo[];
 
     @HasMany(() => UsuarioRecompensa)
     usuarioRecompensas: UsuarioRecompensa[];
@@ -89,6 +95,9 @@ class Usuario extends Model {
 
     @HasMany(() => Proyecto)
     proyectos: Proyecto[];
+
+    @HasMany(() => Comentario)
+    comentarios: Comentario[];
 }
 
 export default Usuario;

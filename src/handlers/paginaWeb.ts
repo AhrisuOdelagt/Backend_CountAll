@@ -24,6 +24,7 @@ const verPaginasBloqueadas = async (req, res) => {
                 })
                 const datosPagina = {
                     id_pagina: datoPagina.dataValues.id_pagina,
+                    nivel_bloqueo: pagina.dataValues.nivel_bloqueo,
                     nombre_pagina: datoPagina.dataValues.nombre_pagina,
                     descr_pagina: datoPagina.dataValues.descr_pagina,
                     url_pagina: datoPagina.dataValues.url_pagina

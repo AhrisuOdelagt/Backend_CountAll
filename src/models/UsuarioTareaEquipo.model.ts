@@ -1,0 +1,46 @@
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo } from 'sequelize-typescript';
+import Usuario from './Usuario.model';
+import Tarea from './Tarea.model';
+import Equipo from './Equipo.model';
+
+@Table({
+    tableName: 'usuario_tarea_equipo'
+})
+class UsuarioTareaEquipo extends Model {
+    @Column({
+        type: DataType.DATE
+    })
+    fecha_asignacion: Date;
+
+    @PrimaryKey
+    @ForeignKey(() => Usuario)
+    @Column({
+        type: DataType.INTEGER
+    })
+    id_usuario_fk_UTE: number;
+
+    @PrimaryKey
+    @ForeignKey(() => Tarea)
+    @Column({
+        type: DataType.INTEGER
+    })
+    id_tarea_fk_UTE: number;
+
+    @PrimaryKey
+    @ForeignKey(() => Equipo)
+    @Column({
+        type: DataType.INTEGER
+    })
+    id_equipo_fk_UTE: number;
+
+    @BelongsTo(() => Equipo)
+    equipo: Equipo;
+
+    @BelongsTo(() => Usuario)
+    usuario: Usuario;
+
+    @BelongsTo(() => Tarea)
+    tarea: Tarea;
+}
+
+export default UsuarioTareaEquipo;

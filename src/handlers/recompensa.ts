@@ -3,7 +3,7 @@ import UsuarioRecompensa from '../models/UsuarioRecompensa.model';
 import Recompensa from '../models/Recompensa.model';
 import Usuario from '../models/Usuario.model';
 
-export const obtenerRecompensas = async (req: Request, res: Response) => {
+const obtenerRecompensas = async (req, res) => {
     try {
         const recompensas = await Recompensa.findAll();
         res.status(200).json(recompensas);
@@ -13,7 +13,7 @@ export const obtenerRecompensas = async (req: Request, res: Response) => {
     }
 };
 
-export const otorgarRecompensa = async (req: Request, res: Response) => {
+const otorgarRecompensa = async (req, res) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
@@ -37,9 +37,7 @@ export const otorgarRecompensa = async (req: Request, res: Response) => {
     }
 };
 
-
-
-export const cambiarAvatar = async (req: Request, res: Response) => {
+const cambiarAvatar = async (req, res) => {
     const { id_usuario, id_recompensa } = req.body;
 
     try {
@@ -95,3 +93,9 @@ export const cambiarAvatar = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error cambiando avatar' });
     }
 };
+
+export {
+    obtenerRecompensas,
+    otorgarRecompensa,
+    cambiarAvatar
+}

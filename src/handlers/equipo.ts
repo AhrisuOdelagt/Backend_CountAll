@@ -38,7 +38,7 @@ const verEquipos = async (req, res) => {
             for (const equipo of equipos_usuario_keys) {
                 const equipoEncontrado = await Equipo.findOne({
                     where: { id_equipo: equipo.dataValues.id_equipo_fk_UE },
-                    attributes: ['nombre_equipo', 'descr_equipo']
+                    attributes: ['id_equipo', 'nombre_equipo', 'descr_equipo']
                 })
                 equipos_usuario.push(equipoEncontrado)
             }
