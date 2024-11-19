@@ -316,10 +316,12 @@ const modificarDatos = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     }
 
-    // Buscamos que el Username no se repita
-    const existingUser = await Usuario.findOne({ where: { nombre_usuario: req.body.nombre_usuario } })
-    if (existingUser) {
-        return res.status(400).json({ errors: [{ msg: 'Este username ya se encuentra en uso' }] })
+    // Verificamos si el username ha sido modificado
+    if (req.body.nombre_usuario !== usuario.dataValues.nombre_usuario) {
+        const existingUser = await Usuario.findOne({ where: { nombre_usuario: req.body.nombre_usuario } })
+        if (existingUser) {
+            return res.status(400).json({ errors: [{ msg: 'Este username ya se encuentra en uso' }] })
+        }
     }
 
     // Modificamos la información del usuario
