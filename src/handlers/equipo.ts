@@ -57,6 +57,57 @@ const verEquipos = async (req, res) => {
     }
 }
 
+const verEquiposProyecto = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Retornamos equipos del usuario EquipoProyecto
+    const { nombre_proyecto } = req.params
+    try {
+        // Buscamos al proyecto
+        const proyectoEncontrado = await Proyecto.findOne({
+            where: { nombre_proyecto: nombre_proyecto },
+        })
+
+        // Buscamos los equipos en la tabla 
+        const equipos_usuario_keys = await EquipoProyecto.findAll({
+            where: { id_proyecto_fk_clas: proyectoEncontrado.dataValues.id_proyecto },
+            attributes: ['id_equipo_fk_clas']
+        })
+
+        // Verificamos que sí haya equipos
+        if (equipos_usuario_keys.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron equipos para este usuario' })
+        }
+
+        // Recuperamos la información de los equipos
+        let equipos_usuario = []
+        try {
+            for (const equipo of equipos_usuario_keys) {
+                const equipoEncontrado = await Equipo.findOne({
+                    where: { id_equipo: equipo.dataValues.id_equipo_fk_clas },
+                    attributes: ['id_equipo', 'nombre_equipo', 'descr_equipo']
+                })
+                equipos_usuario.push(equipoEncontrado)
+            }
+
+            // Enviamos la lista de proyectos en la respuesta
+            res.json({
+                equipos_usuario: equipos_usuario
+            })
+        } catch (error) {
+            console.log(error)
+            res.status(500).json({ error: 'Hubo un problema al recuperar información de los equipos' })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Error al mostrar los equipos' })
+    }
+}
+
 const verEquipo = async (req, res) => {
     // Verificamos una sesión iniciada
     const usuario = req.usuario
@@ -75,7 +126,7 @@ const verEquipo = async (req, res) => {
         // Encontramos usuarios y roles relacionados con el equipo
         let usuariosRoles = await UsuarioEquipo.findAll({
             where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
-            attributes: ['id_usuario_fk_UE', 'rol']
+            attributes: ['id_usuario_fk_UE', 'rol', 'tareas_asignadas', 'tareas_completadas']
         })
         // Encontramos los nombres de los usuarios
         let usuarios = []
@@ -104,7 +155,9 @@ const verEquipo = async (req, res) => {
                 nombre_usuario: usuarios[index].dataValues.nombre_usuario,
                 id_usuario: usuariosRoles[index].dataValues.id_usuario_fk_UE,
                 email_usuario: usuarios[index].dataValues.email_usuario,
-                rol: usuariosRoles[index].dataValues.rol
+                rol: usuariosRoles[index].dataValues.rol,
+                tareas_asignadas: usuariosRoles[index].dataValues.tareas_asignadas,
+                tareas_completadas: usuariosRoles[index].dataValues.tareas_completadas
             }
             infoEquipo.integrantes_equipo.push(integrante)
         }
@@ -510,6 +563,7 @@ const eliminarMiembro = async (req, res) => {
 
 export {
     verEquipos,
+    verEquiposProyecto,
     verEquipo,
     crearEquipo,
     aceptarInvitacion,

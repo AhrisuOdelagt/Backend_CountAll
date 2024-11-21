@@ -82,6 +82,24 @@ class Usuario extends Model {
     })
     url_avatar: string;
 
+    @Default(true)
+    @Column({
+        type: DataType.BOOLEAN
+    })
+    pref_actividades: boolean
+
+    @Default(true)
+    @Column({
+        type: DataType.BOOLEAN
+    })
+    pref_recordatorio: boolean
+
+    @Default(true)
+    @Column({
+        type: DataType.BOOLEAN
+    })
+    pref_puntajes: boolean
+
     @HasMany(() => UsuarioEquipo)
     usuarioEquipos: UsuarioEquipo[];
 

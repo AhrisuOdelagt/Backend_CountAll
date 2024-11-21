@@ -1,14 +1,15 @@
 import { check, validationResult } from 'express-validator'
 import Proyecto from '../models/Proyecto.model'
 import Usuario from '../models/Usuario.model'
+import Equipo from '../models/Equipo.model'
 import Etapa from '../models/Etapa.model'
 import Tarea from '../models/Tarea.model'
 import Riesgo from '../models/Riesgo.model'
 import Estimacion from '../models/Estimacion.model'
 import EquipoProyecto from '../models/EquipoProyecto.model'
 import UsuarioEquipo from '../models/UsuarioEquipo.model'
+import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model'
 import { emailProyectoModificado } from '../helpers/emails'
-import { useInflection } from 'sequelize'
 
 const verProyectos = async(req, res) => {
     // Verificamos una sesión iniciada
@@ -203,9 +204,70 @@ const proporcionarDetalles = async (req, res) => {
                         { nombre_tarea: `Evaluación con Product Owner`, descr_tarea: `Junta programada para obtener retroalimenación de los productos obtenidos con el Product Owner`, id_etapa_fk_tarea: etapa.dataValues.id_etapa },
                         { nombre_tarea: `Retrospectiva del Sprint ${index + 1}`, descr_tarea: `Realizar una junta para evaluar los resultados obtenidos en este Sprint`, id_etapa_fk_tarea: etapa.dataValues.id_etapa }
                     ]
-
+                    
+                    const datos_tareas = []
                     for (const tareaData of tareasData) {
-                        await Tarea.create(tareaData)
+                        const tarea = await Tarea.create(tareaData)
+                        datos_tareas.push(tarea)
+                    }
+
+                    /* Asociamos la tarea al único equipo y a sus miembros */
+                    // Ubicamos al equipo
+                    const unicoEquipo = await EquipoProyecto.findOne({
+                        where: { id_proyecto_fk_clas: proyectoEncontrado.dataValues.id_proyecto }
+                    })
+                    if (!unicoEquipo) {
+                        return res.status(404).json({ error: 'El equipo asociado al proyecto no existe' })
+                    }
+                    const equipoEncontrado = await Equipo.findOne({
+                        where: { id_equipo: unicoEquipo.dataValues.id_equipo_fk_clas }
+                    })
+                    if (!equipoEncontrado) {
+                        return res.status(404).json({ error: 'El equipo no existe' })
+                    }
+                    // Encontramos a los miembros del equipo
+                    const usuariosAsignados = await UsuarioEquipo.findAll({
+                        where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo }
+                    })
+                    for (const tarea of datos_tareas) {
+                        // Asignamos la tarea a todos los miembros
+                        const usuariosEncontrados = []
+                        for (const user of usuariosAsignados) {
+                            // Encontramos al usuario
+                            const usuarioEncontrado = await Usuario.findOne({
+                                where: { id_usuario: user.dataValues.id_usuario_fk_UE }
+                            })
+                            if (!usuarioEncontrado) {
+                                return res.status(400).json({
+                                    error: 'Este usuario no existe'
+                                })
+                            }
+                            // Verificamos que sí esté en el equipo
+                            const usuarioEnEquipo = await UsuarioEquipo.findOne({
+                                where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo }
+                            })
+                            if (!usuarioEnEquipo) {
+                                return res.status(400).json({
+                                    error: 'Este usuario no pertenece al equipo'
+                                })
+                            }
+                            usuariosEncontrados.push(usuarioEncontrado)
+                            // Lo asignamos a la tarea
+                            const dataUsuarioTareaEquipo = {
+                                fecha_asignacion: Date.now(),
+                                id_usuario_fk_UTE: usuarioEncontrado.dataValues.id_usuario,
+                                id_tarea_fk_UTE: tarea.dataValues.id_tarea,
+                                id_equipo_fk_UTE: equipoEncontrado.dataValues.id_equipo
+                            }
+                            await UsuarioTareaEquipo.create(dataUsuarioTareaEquipo)
+
+                            // Incrementamos las tareas asignadas
+                            const adicion = usuarioEnEquipo.dataValues.tareas_asignadas + 1
+                            await UsuarioEquipo.update(
+                                { tareas_asignadas: adicion },
+                                { where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo }}
+                            )
+                        }
                     }
                 }
             }

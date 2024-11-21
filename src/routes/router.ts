@@ -33,6 +33,7 @@ import {
 /* Funciones de Equipo */
 import { 
     verEquipos,
+    verEquiposProyecto,
     verEquipo,
     crearEquipo,
     aceptarInvitacion,
@@ -72,14 +73,22 @@ import {
 /* Funciones de tareas */
 import {
     verTareas,
+    verTareasProyecto,
     verTarea,
     asignarTarea,
     editarTarea,
-    enviarTarea,
+    cambiarEstado,
     revisarTarea,
     desbloquearTarea,
     eliminarTarea
 } from '../handlers/tarea'
+/* Funciones de comentarios */
+import {
+    verComentarios,
+    escribirComentario,
+    modificarComentario,
+    borrarComentario
+} from '../handlers/comentario'
 
 const router = Router()
 
@@ -118,11 +127,20 @@ router.delete('/etapa/eliminarEtapa/:id_etapa', checkAuth, eliminarEtapa)
 /* Tarea */
 // Visualizar tareas
 router.get('/tarea/verTareas/:id_equipo', checkAuth, verTareas)
+router.get('/tarea/verTareasProyecto/:nombre_proyecto', checkAuth, verTareasProyecto)
 router.get('/tarea/verTarea/:id_tarea', checkAuth, verTarea)
 router.post('/tarea/asignarTarea/:id_equipo', checkAuth, asignarTarea)
 // Manejar tareas
-
-// Entrega de tareas
+router.put('/tarea/editarTarea/:id_tarea', checkAuth, editarTarea)
+router.put('/tarea/cambiarEstado/:id_tarea', checkAuth, cambiarEstado)
+router.put('/tarea/desbloquearTarea/:id_tarea', checkAuth, desbloquearTarea)
+router.delete('/tarea/eliminarTarea/:id_tarea', checkAuth, eliminarTarea)
+/* Comentarios Tarea */
+// Ver y gestionar comentarios
+router.get('/comentario/verComentarios/:id_tarea', checkAuth, verComentarios)
+router.post('/comentario/escribirComentario/:id_tarea', checkAuth, escribirComentario)
+router.put('/comentario/modificarComentario/:id_comentario', checkAuth, modificarComentario)
+router.delete('/comentario/borrarComentario/:id_comentario', checkAuth, borrarComentario)
 
 /* Equipo */
 // Crear y gestionar equipo
@@ -133,6 +151,7 @@ router.put('/equipo/misEquipos/:id_equipo/agregarMiembro', checkAuth, agregarMie
 router.delete('/equipo/misEquipos/:id_equipo/eliminarMiembro', checkAuth, eliminarMiembro)
 // Ver equipos
 router.get('/equipo/misEquipos', checkAuth, verEquipos)
+router.get('/equipo/misEquiposProyecto/:nombre_proyecto', checkAuth, verEquiposProyecto)
 router.get('/equipo/misEquipos/:id_equipo', checkAuth, verEquipo)
 
 /* Riesgo */

@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo, Default } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Tarea from './Tarea.model';
 import Equipo from './Equipo.model';
@@ -11,6 +11,12 @@ class UsuarioTareaEquipo extends Model {
         type: DataType.DATE
     })
     fecha_asignacion: Date;
+
+    @Default(0)
+    @Column({
+        type: DataType.INTEGER
+    })
+    puntuacion_provisional: number;
 
     @PrimaryKey
     @ForeignKey(() => Usuario)

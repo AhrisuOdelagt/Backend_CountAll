@@ -3,6 +3,7 @@ import PaginaWeb from '../models/PaginaWeb.model'
 import PaginaBloqueada from '../models/PaginaBloqueada.model'
 import Equipo from '../models/Equipo.model'
 import UsuarioEquipo from '../models/UsuarioEquipo.model'
+import { normalizeUrl } from '../helpers/functions'
 
 const verPaginasBloqueadas = async (req, res) => {
     // Verificamos una sesión iniciada
@@ -61,17 +62,23 @@ const bloquearPagina = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     }
 
+    // Normalizamos la URL antes de usarla
+    const urlNormalizada = normalizeUrl(req.body.url_pagina)
+
     // Revisamos si la página ya está en la Base para decidir qué hacer
     const existePagina = await PaginaWeb.findOne({
-        where: { url_pagina: req.body.url_pagina }
+        where: { url_pagina: urlNormalizada }
     })
+
     if (!existePagina) {
         // Registramos la página web y la bloqueamos
         try {
             const datosPagina = {
-                ...req.body
+                ...req.body,
+                url_pagina: urlNormalizada // Asignamos la URL normalizada
             }
             const paginaWeb = await PaginaWeb.create(datosPagina)
+
             // Bloqueamos la página para el usuario
             const datosPaginaBloqueada = {
                 nivel_bloqueo: 0,
@@ -88,8 +95,7 @@ const bloquearPagina = async (req, res) => {
             console.log(error)
             res.status(500).json({ error: 'Error al registrar y bloquear la página web' })
         }
-    }
-    else {
+    } else {
         // Revisamos si ya está bloqueada
         const estaBloqueada = await PaginaBloqueada.findOne({
             where: {
@@ -167,18 +173,24 @@ const bloquearPaginaEquipo = async (req, res) => {
         return res.status(500).json({ error: 'No hay sesión iniciada' })
     }
 
+    // Normalizamos la URL antes de usarla
+    const urlNormalizada = normalizeUrl(req.body.url_pagina)
+
     // Revisamos si la página ya está en la Base para decidir qué hacer
     const { id_equipo } = req.params
     const existePagina = await PaginaWeb.findOne({
-        where: { url_pagina: req.body.url_pagina }
+        where: { url_pagina: urlNormalizada }  // Usamos la URL normalizada
     })
+
     if (!existePagina) {
         // Registramos la página web y la bloqueamos
         try {
             const datosPagina = {
-                ...req.body
+                ...req.body,
+                url_pagina: urlNormalizada // Asignamos la URL normalizada
             }
             const paginaWeb = await PaginaWeb.create(datosPagina)
+
             // Buscamos al equipo para bloquear la página con todos los usuarios
             const equipoEncontrado = await Equipo.findOne({
                 where: { id_equipo: id_equipo }
@@ -186,10 +198,12 @@ const bloquearPaginaEquipo = async (req, res) => {
             if (!equipoEncontrado) {
                 return res.status(500).json({ error: 'Este equipo no existe' })
             }
+
             // Buscamos a los usuarios del equipo
             const UE = await UsuarioEquipo.findAll({
                 where: { id_equipo_fk_UE: id_equipo }
             })
+
             // Bloqueamos la página para todos los usuarios
             for (const usuarioUE of UE) {
                 const datosPaginaBloqueada = {
@@ -199,6 +213,7 @@ const bloquearPaginaEquipo = async (req, res) => {
                 }
                 await PaginaBloqueada.create(datosPaginaBloqueada)
             }
+
             // Enviar respuesta exitosa
             res.json({
                 msg: 'Se ha bloqueado la página web para todo el equipo'
@@ -207,8 +222,7 @@ const bloquearPaginaEquipo = async (req, res) => {
             console.log(error)
             res.status(500).json({ error: 'Error al registrar y bloquear la página web para todo el equipo' })
         }
-    }
-    else {
+    } else {
         // Revisamos si ya está bloqueada
         const estaBloqueada = await PaginaBloqueada.findOne({
             where: {
@@ -220,6 +234,7 @@ const bloquearPaginaEquipo = async (req, res) => {
         if (estaBloqueada) {
             return res.status(500).json({ error: 'Esta página ya está bloqueada para el equipo' })
         }
+
         // Bloqueamos la página
         try {
             // Buscamos al equipo para bloquear la página con todos los usuarios
@@ -229,10 +244,12 @@ const bloquearPaginaEquipo = async (req, res) => {
             if (!equipoEncontrado) {
                 return res.status(500).json({ error: 'Este equipo no existe' })
             }
+
             // Buscamos a los usuarios del equipo
             const UE = await UsuarioEquipo.findAll({
                 where: { id_equipo_fk_UE: id_equipo }
             })
+
             // Bloqueamos la página para todos los usuarios
             for (const usuarioUE of UE) {
                 const datosPaginaBloqueada = {

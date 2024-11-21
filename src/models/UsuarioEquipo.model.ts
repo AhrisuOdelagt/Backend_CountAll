@@ -27,13 +27,7 @@ class UsuarioEquipo extends Model {
 
     @Default(0)
     @Column({
-        type: DataType.DOUBLE
-    })
-    puntuacion_provisional: number;
-
-    @Default(0)
-    @Column({
-        type: DataType.DOUBLE
+        type: DataType.INTEGER
     })
     puntuacion_local: number;
 
