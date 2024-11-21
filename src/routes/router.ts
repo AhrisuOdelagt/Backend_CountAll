@@ -167,7 +167,7 @@ router.post('/paginaWeb/bloquearPaginaEquipo/:id_equipo', checkAuth, bloquearPag
 router.delete('/paginaWeb/desbloquearPaginaEquipo/:id_equipo/:id_pagina', checkAuth, desbloquearPaginaEquipo)
 
 /* Clasificación */
-router.get('/clasificaciones', checkAuth, obtenerClasificaciones);
+router.get('/clasificaciones/:id_equipo', checkAuth, obtenerClasificaciones);
 
 /* Recompensa */
 router.get('/obtenerRecompensas/:id_usuario', checkAuth, obtenerRecompensas);
