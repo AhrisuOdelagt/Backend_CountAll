@@ -3,8 +3,11 @@ import UsuarioEquipo from '../models/UsuarioEquipo.model';
 import Usuario from '../models/Usuario.model';
 
 export const obtenerClasificaciones = async (req: Request, res: Response) => {
+    const { id_equipo } = req.params;
+
     try {
         const clasificaciones = await UsuarioEquipo.findAll({
+            where: { id_equipo_fk_UE: id_equipo },
             attributes: ['id_usuario_fk_UE', 'puntuacion_local', 'rol'],
             include: [{
                 model: Usuario,
