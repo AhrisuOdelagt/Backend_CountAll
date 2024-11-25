@@ -403,7 +403,7 @@ const agregarMiembro = async (req, res) => {
     }
 
     // Validación de la integridad de los datos
-    await check('nombre_usuario').notEmpty().withMessage('Nombre de usuario vacío').run(req)
+    await check('email_usuario').notEmpty().withMessage('Correo electrónico de usuario vacío').run(req)
 
     // Manejo de errores
     const errors = validationResult(req)
@@ -423,7 +423,7 @@ const agregarMiembro = async (req, res) => {
 
         // Verificamos la existencia del usuario
         const usuarioEncontrado = await Usuario.findOne({
-            where: { nombre_usuario: req.body.nombre_usuario },
+            where: { email_usuario: req.body.email_usuario },
             attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
         })
         if (!usuarioEncontrado) {
