@@ -175,7 +175,13 @@ const proporcionarDetalles = async (req, res) => {
 
         if (proyectoEncontrado) {
             await Proyecto.update(
-                { fecha_inicio_proyecto, fecha_fin_proyecto, estado_proyecto, metodologia_proyecto, numero_etapas_proyecto },
+                {
+                    fecha_inicio_proyecto: fecha_inicio_proyecto,
+                    fecha_fin_proyecto: fecha_fin_proyecto,
+                    estado_proyecto,
+                    metodologia_proyecto,
+                    numero_etapas_proyecto
+                },
                 { where: { nombre_proyecto } }
             )
 

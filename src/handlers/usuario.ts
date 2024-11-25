@@ -363,6 +363,85 @@ const modificarDatos = async (req, res) => {
     }
 }
 
+const verPreferencias = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Regresamos las preferencias del usuario
+    try {
+        // Generamos el JSON de retorno
+        const preferencias = {
+            pref_actividades: usuario.dataValues.pref_actividades,
+            pref_recordatorio: usuario.dataValues.pref_recordatorio,
+            pref_puntajes: usuario.dataValues.pref_puntajes
+        }
+
+        // Enviamos la información como respuesta
+        res.json({
+            preferencias: preferencias
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: 'Error al mostrar las preferencias del usuario'
+        })
+    }
+}
+
+const modificarPreferencias = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Validación de la integridad de los datos
+    await check('pref_actividades').notEmpty().withMessage('Preferencias de actividades vacío').run(req)
+    await check('pref_recordatorio').notEmpty().withMessage('Preferencias de recordatorios vacío').run(req)
+    await check('pref_puntajes').notEmpty().withMessage('Preferencias de puntajes vacío').run(req)
+
+    // Manejo de errores
+    let errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+    // Modificamos las preferencias del usuario
+    try {
+        // Conseguimos las preferencias
+        const preferencias = {
+            pref_actividades: req.body.pref_actividades,
+            pref_recordatorio: req.body.pref_recordatorio,
+            pref_puntajes: req.body.pref_puntajes
+        }
+
+        // Modificamos las preferencias
+        await Usuario.update(
+            {
+                pref_actividades: preferencias.pref_actividades,
+                pref_recordatorio: preferencias.pref_recordatorio,
+                pref_puntajes: preferencias.pref_puntajes,
+            },
+            { where: { id_usuario: usuario.dataValues.id_usuario } }
+        )
+
+        // Enviamos mensaje de éxito
+        res.json({
+            msg: 'Se han modificado las preferencias de usuario'
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: 'Error al modificar las preferencias del usuario'
+        })
+    }
+}
+
 export { 
     registrarUsuario,
     iniciarSesion,
@@ -373,5 +452,7 @@ export {
     restablecerPassword,
     verPerfil,
     modificarDatos,
-    obtenerUsuarioActual
+    obtenerUsuarioActual,
+    verPreferencias,
+    modificarPreferencias
 }

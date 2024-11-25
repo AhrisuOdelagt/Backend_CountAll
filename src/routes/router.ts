@@ -12,7 +12,9 @@ import {
     verPerfil,
     modificarDatos,
     reenviarCorreoConfirmacion,
-    obtenerUsuarioActual
+    obtenerUsuarioActual,
+    verPreferencias,
+    modificarPreferencias
 } from '../handlers/usuario'
  /* Funciones de Proyecto */
  import { 
@@ -104,7 +106,9 @@ router.post('/usuario/reenviarCorreoConfirmacion', reenviarCorreoConfirmacion);
 // Ver y modificar información
 router.get('/usuario/verPerfil', checkAuth, verPerfil)
 router.get('/usuario/actual', checkAuth, obtenerUsuarioActual)
+router.get('/usuario/preferencias', checkAuth, verPreferencias)
 router.post('/usuario/modificarDatos', checkAuth, modificarDatos)
+router.put('/usuario/modificarPreferencias', checkAuth, modificarPreferencias)
 
 /* Proyecto */
 // Visualizar proyectos
@@ -133,6 +137,7 @@ router.post('/tarea/asignarTarea/:id_equipo', checkAuth, asignarTarea)
 // Manejar tareas
 router.put('/tarea/editarTarea/:id_tarea', checkAuth, editarTarea)
 router.put('/tarea/cambiarEstado/:id_tarea', checkAuth, cambiarEstado)
+router.put('/tarea/revisarTarea/:id_tarea', checkAuth, revisarTarea)
 router.put('/tarea/desbloquearTarea/:id_tarea', checkAuth, desbloquearTarea)
 router.delete('/tarea/eliminarTarea/:id_tarea', checkAuth, eliminarTarea)
 /* Comentarios Tarea */

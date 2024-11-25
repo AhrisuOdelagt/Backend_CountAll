@@ -66,9 +66,9 @@ class Usuario extends Model {
     puntuacion_global: number
 
     @Column({
-        type: DataType.STRING(256)
+        type: DataType.INTEGER
     })
-    tareas_completadas_global: string;
+    tareas_completadas_global: number;
 
     @Default(false)
     @Column({

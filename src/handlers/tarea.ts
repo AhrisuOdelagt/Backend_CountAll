@@ -654,7 +654,158 @@ const cambiarEstado = async (req, res) => {
 }
 
 const revisarTarea = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
 
+    // Validación de la integridad de los datos
+    await check('nox_creatividad').notEmpty().withMessage('Modificador de creatividad vacío').run(req)
+    await check('nox_calidad').notEmpty().withMessage('Modificador de calidad del trabajo vacío').run(req)
+    await check('nox_colaboración').notEmpty().withMessage('Modificador de colaboración vacío').run(req)
+    await check('nox_eficiencia').notEmpty().withMessage('Modificador de eficiencia vacío').run(req)
+    await check('nox_doc_completa').notEmpty().withMessage('Modificador de documentación completa vacío').run(req)
+    await check('nox_mala_implem').notEmpty().withMessage('Modificador de mala implementación vacío').run(req)
+    await check('nox_doc_incompleta').notEmpty().withMessage('Modificador de falta de documentación vacío').run(req)
+    await check('nox_baja_calidad').notEmpty().withMessage('Modificador de baja calidad vacío').run(req)
+    await check('nox_no_comunicacion').notEmpty().withMessage('Modificador de falta de comunicación vacío').run(req)
+    await check('nox_no_especificacion').notEmpty().withMessage('Modificador de incumplimiento de especificaciones vacío').run(req)
+
+    // Manejo de errores
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+    /* Revisamos la tarea */
+    const { id_tarea } = req.params
+    try {
+        // Buscamos la tarea
+        const tareaEncontrada = await Tarea.findOne({
+            where: { id_tarea }
+        })
+        if (!tareaEncontrada) {
+            return res.status(500).json({ error: 'La tarea no existe' })
+        }
+
+        // Verificamos que esté en un estado de revisión
+        if (!tareaEncontrada.dataValues.is_locked) {
+            return res.status(500).json({ error: 'La tarea no puede revisarse' })
+        }
+
+        // Revisamos si la tarea admite amonestaciones
+        const amonestacion = tareaEncontrada.dataValues.amonestacion
+        // Si hay amonestación, se aplican los modificadores
+        if (amonestacion) {
+            // Obtenemos el puntaje provisional de la tarea
+            const asignado = await UsuarioTareaEquipo.findOne({
+                where: { id_tarea_fk_UTE: id_tarea }
+            })
+            const asignados = await UsuarioTareaEquipo.findAll({
+                where: { id_tarea_fk_UTE: id_tarea }
+            })
+            // Calculamos la amonestación acumulada
+            const booleanos_amon = [
+                req.body.nox_creatividad,
+                req.body.nox_calidad,
+                req.body.nox_colaboración,
+                req.body.nox_eficiencia,
+                req.body.nox_doc_completa,
+                req.body.nox_mala_implem,
+                req.body.nox_doc_incompleta,
+                req.body.nox_baja_calidad,
+                req.body.nox_no_comunicacion,
+                req.body.nox_no_especificacion
+            ]
+            const acumulado_amon = NOX_Po(booleanos_amon)
+            const puntaje = NOX(asignado.dataValues.puntuacion_provisional, acumulado_amon)
+
+            // Colocamos el puntaje provisional en el local de los usuarios asignados
+            for (const usuario of asignados) {
+                const miembroEquipo = await UsuarioEquipo.findOne({
+                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE }
+                })
+                const local = miembroEquipo.dataValues.puntuacion_local + puntaje
+                const asignadas = miembroEquipo.dataValues.tareas_asignadas
+                const completadas = miembroEquipo.dataValues.tareas_completadas
+                // Actualizamos las estadísticas locales
+                await UsuarioEquipo.update(
+                    {
+                        puntuacion_local: local,
+                        tareas_asignadas: asignadas - 1,
+                        tareas_completadas: completadas + 1
+                    },
+                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE } }
+                )
+                // Actualizamos las estadísticas globales
+                const usuarioEncontrado = await Usuario.findOne({
+                    where: { id_usuario: usuario.dataValues.id_usuario_fk_UTE }
+                })
+                const global = usuarioEncontrado.dataValues.puntuacion_global + puntaje
+                const completadas_g = usuarioEncontrado.dataValues.tareas_completadas_global
+                await Usuario.update(
+                    {
+                        puntuacion_global: global,
+                        tareas_completadas_global: completadas_g + 1
+                    },
+                    { where: { id_usuario: usuario.dataValues.id_usuario_fk_UTE } }
+                )
+            }
+        }
+        // Si no hay, se extrae la puntuación provicional y se suma a la clasificación
+        else {
+            // Obtenemos el puntaje provisional de la tarea
+            const asignado = await UsuarioTareaEquipo.findOne({
+                where: { id_tarea_fk_UTE: id_tarea }
+            })
+            const asignados = await UsuarioTareaEquipo.findAll({
+                where: { id_tarea_fk_UTE: id_tarea }
+            })
+            const puntaje = asignado.dataValues.puntuacion_provisional
+
+            // Colocamos el puntaje provisional en el local de los usuarios asignados
+            for (const usuario of asignados) {
+                const miembroEquipo = await UsuarioEquipo.findOne({
+                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE }
+                })
+                const local = miembroEquipo.dataValues.puntuacion_local + puntaje
+                const asignadas = miembroEquipo.dataValues.tareas_asignadas
+                const completadas = miembroEquipo.dataValues.tareas_completadas
+                // Actualizamos las estadísticas locales
+                await UsuarioEquipo.update(
+                    {
+                        puntuacion_local: local,
+                        tareas_asignadas: asignadas - 1,
+                        tareas_completadas: completadas + 1
+                    },
+                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE } }
+                )
+                // Actualizamos las estadísticas globales
+                const usuarioEncontrado = await Usuario.findOne({
+                    where: { id_usuario: usuario.dataValues.id_usuario_fk_UTE }
+                })
+                const global = usuarioEncontrado.dataValues.puntuacion_global + puntaje
+                const completadas_g = usuarioEncontrado.dataValues.tareas_completadas_global
+                await Usuario.update(
+                    {
+                        puntuacion_global: global,
+                        tareas_completadas_global: completadas_g + 1
+                    },
+                    { where: { id_usuario: usuario.dataValues.id_usuario_fk_UTE } }
+                )
+            }
+        }
+
+        // Enviar respuesta exitosa
+        res.json({
+            msg: 'Se ha devuelto la tarea y se han actualizado los puntajes de los asignados'
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Error al revisar la tarea' })
+    }
 }
 
 const desbloquearTarea = async (req, res) => {
@@ -682,9 +833,15 @@ const desbloquearTarea = async (req, res) => {
             { where: { id_tarea } }
         )
 
+        // Reiniciamos el puntaje acumulado de la tarea
+        await UsuarioTareaEquipo.update(
+            { puntuacion_provisional: 0 },
+            { where: { id_tarea_fk_UTE: tareaEncontrada.dataValues.id_tarea } }
+        )
+
         // Enviar respuesta exitosa
         res.json({
-            msg: 'Se ha desbloqueado la tarea'
+            msg: 'Se ha desbloqueado la tarea para los asignados'
         })
 
     } catch (error) {
