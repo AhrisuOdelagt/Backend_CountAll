@@ -185,6 +185,15 @@ const olvidePassword = async (req, res) => {
 }
 
 const reenviarCorreoConfirmacion = async (req, res) => {
+    // Validación de la integridad de los datos
+    await check('email_usuario').notEmpty().withMessage('Correo electrónico vacío').isEmail().withMessage('Correo electrónico no válido').run(req)
+    
+    // Manejo de errores
+    let errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+    
     const { email_usuario } = req.body;
 
     // Verificar si el correo electrónico existe

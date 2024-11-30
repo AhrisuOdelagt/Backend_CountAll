@@ -518,6 +518,13 @@ const eliminarMiembro = async (req, res) => {
             return res.status(404).json({ error: 'Usuario no encontrado' })
         }
 
+        // Verificamos si el usuario es el mismo que maneja la función
+        const id_encontrado = usuarioEncontrado.dataValues.id_usuario
+        const id_sesion = usuario.dataValues.id_sesion
+        if (id_encontrado === id_sesion) {
+            return res.status(404).json({ error: 'Este usuario no puede eliminarse' })
+        }
+
         // Verificamos si el usuario pertenece al equipo
         const miembroExistente = await UsuarioEquipo.findOne({
             where: {
@@ -559,7 +566,6 @@ const eliminarMiembro = async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar el miembro del equipo' })
     }
 }
-
 
 export {
     verEquipos,

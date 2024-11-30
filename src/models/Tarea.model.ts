@@ -72,6 +72,12 @@ class Tarea extends Model {
     })
     is_locked: boolean;
 
+    @Default(false)
+    @Column({
+        type: DataType.BOOLEAN
+    })
+    first_time_comp: boolean;
+
     @Default(true)
     @Column({
         type: DataType.BOOLEAN
