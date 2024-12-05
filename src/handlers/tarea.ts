@@ -38,7 +38,8 @@ const verTareas = async (req, res) => {
                         'estado_tarea',
                         'prioridad_tarea',
                         'dificultad_tarea',
-                        'comentarios_tarea'
+                        'comentarios_tarea',
+                        'is_locked'
                     ]
                 }
             ],
