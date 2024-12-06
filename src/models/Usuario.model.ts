@@ -65,6 +65,7 @@ class Usuario extends Model {
     })
     puntuacion_global: number
 
+    @Default(0)
     @Column({
         type: DataType.INTEGER
     })

@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, PrimaryKey, BelongsTo, Default } from 'sequelize-typescript';
 import Usuario from './Usuario.model';
 import Recompensa from './Recompensa.model';
 
@@ -6,6 +6,7 @@ import Recompensa from './Recompensa.model';
     tableName: 'usuario_recompensa'
 })
 class UsuarioRecompensa extends Model {
+    @Default(DataType.NOW)
     @Column({
         type: DataType.DATE
     })

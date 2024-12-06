@@ -24,7 +24,7 @@ const emailRegistro = async (datos) => {
         <p>Hola, ${nombre_usuario}, compruebe su cuenta en CountAll.</p>
         <p>Su cuenta está casi lista; sólo es necesario finalizar su proceso de confirmación.</p>
         <p>Para finalizar este proceso, ingrese en el enlace que tiene a continuación:</p>
-        <p>http://localhost:4444/api/usuario/confirmarUsuario/${token_usuario}</p>
+        <p>http://localhost:5173/account-verified/${token_usuario}</p>
         <p></b>Si usted no creó esta cuenta, por favor ignore este correo electrónico.</p>
         `
     })
@@ -51,7 +51,7 @@ const emailRestablecimiento = async (datos) => {
         html: `
         <p>Hola, ${nombre_usuario}, restablezca su contraseña en CountAll.</p>
         <p>Para continuar con este proceso, ingrese en el enlace que tiene a continuación:</p>
-        <p>http://localhost:4444/api/usuario/comprobarToken/${token_usuario}</p>
+        <p>http://localhost:5173/new-password/${token_usuario}</p>
         <p></b>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
         `
     })
@@ -247,6 +247,196 @@ const emailEtapaEliminada = async (datos) => {
     })
 }
 
+const emailTareaAsignada = async (datos) => {
+  const {email_asignado, nombre_asignado, email_lider, nombre_tarea, descr_tarea, fecha_fin_tarea, nombre_equipo} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_asignado,
+        subject: "CountAll — Tiene una tarea nueva",
+        text: "Se le ha asignado una tarea nueva en CountAll",
+        html: `
+        <p>Hola, ${nombre_asignado}, el líder del equipo «${nombre_equipo}» le ha asignado una tarea nueva.</p>
+        <p>Se le notifican datos de relevancia acerca de la tarea:</p>
+        <p>Nombre de la tarea: «${nombre_tarea}»</p>
+        <p>Descripción de la tarea: «${descr_tarea}»</p>
+        <p>Fecha de entrega: «${fecha_fin_tarea}»</p>
+        <p></b>Si considera que esto es un error, contacte al líder del equipo a través de su correo electrónico: ${email_lider}.</p>
+        <p>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
+const emailTareaEditada = async (datos) => {
+  const {email_asignado, nombre_asignado, email_lider, nombre_tarea, descr_tarea, fecha_fin_tarea, nombre_equipo} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_asignado,
+        subject: "CountAll — Una tarea se ha modificado",
+        text: "Una tarea asignada en CountAll acaba de ser modificada",
+        html: `
+        <p>Hola, ${nombre_asignado}, el líder del equipo «${nombre_equipo}» ha modificado una tarea que tenía asignada.</p>
+        <p>Estos son los nuevos datos de la tarea:</p>
+        <p>Nombre de la tarea: «${nombre_tarea}»</p>
+        <p>Descripción de la tarea: «${descr_tarea}»</p>
+        <p>Fecha de entrega: «${fecha_fin_tarea}»</p>
+        <p></b>Si considera que esto es un error, contacte al líder del equipo a través de su correo electrónico: ${email_lider}.</p>
+        <p>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
+const emailCambiarEstadoFT = async (datos) => {
+  const {email_asignado, nombre_asignado, nombre_tarea, recompensa_obtenida} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_asignado,
+        subject: "CountAll — ¡Ha completado una tarea!",
+        text: "Ha marcado una tarea como completada y recibido una recompensa",
+        html: `
+        <p>Hola, ${nombre_asignado}, ha recibido una recompensa por haber marcado la tarea «${nombre_tarea}».</p>
+        <p>Esta es la recompensa que obtuvo al completar la tarea:</p>
+        <p>¡Ha obtenido: ${recompensa_obtenida}!</p>
+        <p></b>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
+const emailCambiarEstadoLider = async (datos) => {
+  const {email_lider, nombre_lider, nombre_tarea, nombre_equipo} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_lider,
+        subject: "CountAll — Tiene una tarea pendiente por revisar",
+        text: `Un usuario del equipo «${nombre_equipo}» ha completado una tarea y espera revisión`,
+        html: `
+        <p>Hola, ${nombre_lider}, un usuario ha completado la tarea «${nombre_tarea}» y está lista para su revisión.</p>
+        <p></b>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
+const emailTareaRevisada = async (datos) => {
+  const {email_asignado, nombre_asignado, nombre_tarea, nombre_equipo, puntaje_obtenido} = datos;
+
+  const transport = nodemailer.createTransport({
+      host: process.env.MASTER_H,
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MASTER_EM,
+        pass: process.env.MASTER_P
+      }
+    });
+  // Información del email
+  const info = await transport.sendMail({
+      from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+      to: email_asignado,
+      subject: "CountAll — ¡Su tarea ha sido aprobada!",
+      text: `Un líder del equipo «${nombre_equipo}» ha aprobado una tarea`,
+      html: `
+      <p>Hola, ${nombre_asignado} ¡Un líder ha devuelto la tarea «${nombre_tarea}» y ha aumentado su clasificación!.</p>
+      <p>Su puntaje actual dentro de la clasificación del equipo «${nombre_equipo}» es: ${puntaje_obtenido}.</p>
+      <p></b>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+      `
+  })
+}
+
+const emailTareaDesbloqueada = async (datos) => {
+  const {email_asignado, nombre_asignado, nombre_tarea, nombre_equipo} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_asignado,
+        subject: "CountAll — Una tarea ha sido devuelta",
+        text: `Un líder del equipo «${nombre_equipo}» ha devuelto una tarea`,
+        html: `
+        <p>Hola, ${nombre_asignado}, un líder ha devuelto la tarea «${nombre_tarea}» para aplicar prontas correcciones.</p>
+        <p></b>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
+const emailTareaEliminada = async (datos) => {
+  const {email_asignado, nombre_asignado, email_lider, nombre_tarea, nombre_equipo} = datos;
+
+    const transport = nodemailer.createTransport({
+        host: process.env.MASTER_H,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.MASTER_EM,
+          pass: process.env.MASTER_P
+        }
+      });
+    // Información del email
+    const info = await transport.sendMail({
+        from: '"CountAll — Administrador de la Base de Datos" «countall2024b021@gmail.com»',
+        to: email_asignado,
+        subject: "CountAll — Una tarea se ha eliminado",
+        text: "Una tarea asignada en CountAll acaba de ser eliminada del sistema",
+        html: `
+        <p>Hola, ${nombre_asignado}, el líder del equipo «${nombre_equipo}» ha eliminado una tarea que tenía asignada.</p>
+        <p>La tarea «${nombre_tarea}» ha sido eliminada del sistema, por lo que ya no la tendrá asignada y cualquier puntaje que se podría haber obtenido se ha perdido.</p>
+        <p></b>Si considera que esto es un error, contacte al líder del equipo a través de su correo electrónico: ${email_lider}.</p>
+        <p>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
+        `
+    })
+}
+
 export {
     emailRegistro,
     emailRestablecimiento,
@@ -256,5 +446,12 @@ export {
     emailProyectoModificado,
     emailEtapaAgregada,
     emailEtapaModificada,
-    emailEtapaEliminada
+    emailEtapaEliminada,
+    emailTareaAsignada,
+    emailTareaEditada,
+    emailCambiarEstadoFT,
+    emailCambiarEstadoLider,
+    emailTareaRevisada,
+    emailTareaDesbloqueada,
+    emailTareaEliminada
 }

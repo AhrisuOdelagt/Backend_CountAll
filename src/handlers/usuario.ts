@@ -8,7 +8,10 @@ import Usuario from "../models/Usuario.model"
 import UsuarioRecompensa from '../models/UsuarioRecompensa.model'
 import Recompensa from '../models/Recompensa.model'
 import { generarTokenAleatorio } from '../helpers/functions'
-import { emailRegistro } from '../helpers/emails'
+import {
+    emailRegistro,
+    emailRestablecimiento
+} from '../helpers/emails'
 
 const registrarUsuario = async (req, res) => {
     // Validación de la integridad de los datos
@@ -139,7 +142,7 @@ const confirmarUsuario = async (req, res) => {
     // Confirmamos al usuario
     try {
         await Usuario.update(
-                { is_confirmed: true, token_usuario: null },
+            { is_confirmed: true, token_usuario: null },
             { where: { token_usuario: token_usuario } }
         )
         res.json({
@@ -169,13 +172,30 @@ const olvidePassword = async (req, res) => {
     }
 
     // Generamos un token nuevo para el usuario
+    const newToken = generarTokenAleatorio()
     try {
         await Usuario.update(
-               { token_usuario: generarTokenAleatorio() },
+            { token_usuario: newToken },
             { where: { email_usuario: req.body.email_usuario } }
         )
+
+        // Recuperamos el usuario actualizado para obtener el nuevo token
+        const updatedUser = await Usuario.findOne({ where: { email_usuario: req.body.email_usuario } })
+
+        // Enviamos el correo de confirmación
+        try {
+            await emailRestablecimiento({
+                email_usuario: updatedUser.dataValues.email_usuario,
+                nombre_usuario: updatedUser.dataValues.nombre_usuario,
+                token_usuario: updatedUser.dataValues.token_usuario
+            })
+        } catch (error) {
+            return res.status(500).json({ error: 'Hubo un error al enviar el correo de confirmación' })
+        }
+
+        // Enviamos respuesta exitosa
         res.json({
-            msg: 'Token generado'
+            msg: 'Token generado y correo enviado exitosamente'
         })
     } catch (error) {
         res.status(500).json({
@@ -183,6 +203,7 @@ const olvidePassword = async (req, res) => {
         })
     }
 }
+
 
 const reenviarCorreoConfirmacion = async (req, res) => {
     // Validación de la integridad de los datos
@@ -194,17 +215,17 @@ const reenviarCorreoConfirmacion = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     }
     
-    const { email_usuario } = req.body;
+    const { email_usuario } = req.body
 
     // Verificar si el correo electrónico existe
-    const existingUser = await Usuario.findOne({ where: { email_usuario } });
+    const existingUser = await Usuario.findOne({ where: { email_usuario } })
     if (!existingUser) {
-        return res.status(400).json({ errors: [{ msg: 'El usuario no existe' }] });
+        return res.status(400).json({ errors: [{ msg: 'El usuario no existe' }] })
     }
 
     // Verificar si el usuario ya está confirmado
     if (existingUser.dataValues.is_confirmed) {
-        return res.status(400).json({ errors: [{ msg: 'El usuario ya está confirmado' }] });
+        return res.status(400).json({ errors: [{ msg: 'El usuario ya está confirmado' }] })
     }
 
     try {
@@ -213,13 +234,13 @@ const reenviarCorreoConfirmacion = async (req, res) => {
             email_usuario: existingUser.dataValues.email_usuario,
             nombre_usuario: existingUser.dataValues.nombre_usuario,
             token_usuario: existingUser.dataValues.token_usuario
-        });
+        })
 
-        res.json({ msg: 'El correo de confirmación ha sido reenviado' });
+        res.json({ msg: 'El correo de confirmación ha sido reenviado' })
     } catch (error) {
-        res.status(500).json({ error: 'Hubo un error al enviar el correo de confirmación' });
+        res.status(500).json({ error: 'Hubo un error al enviar el correo de confirmación' })
     }
-};
+}
 
 const comprobarToken = async (req, res) => {
     // Recuperamos el token desde la URL
@@ -287,7 +308,8 @@ const verPerfil = async (req, res) => {
             username_usuario: usuario.dataValues.nombre_usuario,
             email_usuario: usuario.dataValues.email_usuario,
             numero_telefonico: usuario.dataValues.numero_telefonico,
-            puntuacion_global: usuario.dataValues.puntuacion_global
+            puntuacion_global: usuario.dataValues.puntuacion_global,
+            total_tareas: usuario.dataValues.tareas_completadas_global
         }
         // Enviamos la información como respuesta
         res.json({
@@ -302,9 +324,9 @@ const verPerfil = async (req, res) => {
 }
 
 const obtenerUsuarioActual = async (req, res) => {
-    const usuario = req.usuario;
+    const usuario = req.usuario
     if (!usuario) {
-        return res.status(500).json({ error: 'No hay sesión iniciada' });
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
     }
 
     try {
@@ -314,13 +336,13 @@ const obtenerUsuarioActual = async (req, res) => {
             name_usuario: usuario.dataValues.name_usuario,
             surname_usuario: usuario.dataValues.surname_usuario,
             url_avatar: usuario.dataValues.url_avatar
-        };
-        res.json(info_usuario);
+        }
+        res.json(info_usuario)
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ msg: 'Error al obtener la información del usuario' });
+        console.log(error)
+        res.status(500).json({ msg: 'Error al obtener la información del usuario' })
     }
-};
+}
 
 const modificarDatos = async (req, res) => {
     // Verificamos una sesión iniciada
