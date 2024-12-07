@@ -227,21 +227,21 @@ const crearEquipo = async (req, res) => {
 
         // Obtenemos Id's & emails de todos los usuarios
         let usuarios = []
-        const nombre = usuario.dataValues.nombre_usuario
+        const email = usuario.dataValues.email_usuario
         const usuarioEncontrado = await Usuario.findOne({
-            where: { nombre_usuario: nombre },
+            where: { email_usuario: email },
             attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
         })
         usuarios.push(usuarioEncontrado)
 
-        for (const nombre_usuario of req.body.usuarios) {
+        for (const email_usuario of req.body.usuarios) {
             const usuarioEncontrado = await Usuario.findOne({
-                where: { nombre_usuario },
+                where: { email_usuario },
                 attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
             })
             
             if (!usuarioEncontrado) {
-                return res.status(404).json({ error: `Este usuario no existe: ${nombre_usuario}` })
+                return res.status(404).json({ error: `Este usuario no existe: ${email_usuario}` })
             }
             usuarios.push(usuarioEncontrado)
         }

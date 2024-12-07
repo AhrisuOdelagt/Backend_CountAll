@@ -23,7 +23,7 @@ const verProyectos = async(req, res) => {
         // Buscamos los proyectos
         const proyectos_usuario = await Proyecto.findAll({
             where: { id_usuario_fk_proyecto: usuario.dataValues.id_usuario },
-            attributes: ['id_proyecto', 'nombre_proyecto', 'descr_proyecto']
+            attributes: ['id_proyecto', 'nombre_proyecto', 'descr_proyecto', 'estado_proyecto'] // Incluimos estado_proyecto
         })
 
         // Verificamos que sí haya proyectos
