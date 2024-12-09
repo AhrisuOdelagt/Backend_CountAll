@@ -40,7 +40,21 @@ const verEquipos = async (req, res) => {
                     where: { id_equipo: equipo.dataValues.id_equipo_fk_UE },
                     attributes: ['id_equipo', 'nombre_equipo', 'descr_equipo']
                 })
-                equipos_usuario.push(equipoEncontrado)
+
+                // Obtenemos el nombre del proyecto asociado al equipo
+                const equipoProyecto = await EquipoProyecto.findOne({
+                    where: { id_equipo_fk_clas: equipoEncontrado.dataValues.id_equipo },
+                    attributes: ['id_proyecto_fk_clas']
+                })
+                const proyecto = await Proyecto.findOne({
+                    where: { id_proyecto: equipoProyecto.dataValues.id_proyecto_fk_clas },
+                    attributes: ['nombre_proyecto']
+                })
+
+                equipos_usuario.push({
+                    ...equipoEncontrado.dataValues,
+                    nombre_proyecto: proyecto.dataValues.nombre_proyecto
+                })
             }
 
             // Enviamos la lista de proyectos en la respuesta
@@ -123,6 +137,16 @@ const verEquipo = async (req, res) => {
             where: { id_equipo: id_equipo }
         })
 
+        // Encontramos el proyecto asociado al equipo
+        const equipoProyecto = await EquipoProyecto.findOne({
+            where: { id_equipo_fk_clas: equipoEncontrado.dataValues.id_equipo },
+            attributes: ['id_proyecto_fk_clas']
+        })
+        const proyecto = await Proyecto.findOne({
+            where: { id_proyecto: equipoProyecto.dataValues.id_proyecto_fk_clas },
+            attributes: ['nombre_proyecto']
+        })
+
         // Encontramos usuarios y roles relacionados con el equipo
         let usuariosRoles = await UsuarioEquipo.findAll({
             where: { id_equipo_fk_UE: equipoEncontrado.dataValues.id_equipo, is_confirmed_UE: true },
@@ -148,6 +172,7 @@ const verEquipo = async (req, res) => {
             id_equipo: equipoEncontrado.dataValues.id_equipo,
             nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
             descr_equipo: equipoEncontrado.dataValues.descr_equipo,
+            nombre_proyecto: proyecto.dataValues.nombre_proyecto,
             integrantes_equipo: []
         }
         for (let index = 0; index < usuarios.length; index++) {
