@@ -22,7 +22,8 @@ import {
     verProyecto,
     crearProyecto,
     proporcionarDetalles,
-    modificarProyecto
+    modificarProyecto,
+    verEstadisticas
 } from '../handlers/proyecto'
 /* Funciones Etapa */
 import {
@@ -41,7 +42,8 @@ import {
     aceptarInvitacion,
     asignarRoles,
     agregarMiembro,
-    eliminarMiembro
+    eliminarMiembro,
+    inicioEquipo
 } from '../handlers/equipo'
  /* Funciones de Riesgo */
  import {
@@ -114,6 +116,7 @@ router.put('/usuario/modificarPreferencias', checkAuth, modificarPreferencias)
 // Visualizar proyectos
 router.get('/proyecto/misProyectos', checkAuth, verProyectos)
 router.get('/proyecto/misProyectos/:nombre_proyecto', checkAuth, verProyecto)
+router.get('/proyecto/verEstadisticas/:nombre_proyecto', checkAuth, verEstadisticas)
 // Creación del proyecto
 router.post('/proyecto/crearProyecto', checkAuth, crearProyecto)
 router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarDetalles)
@@ -148,6 +151,8 @@ router.put('/comentario/modificarComentario/:id_comentario', checkAuth, modifica
 router.delete('/comentario/borrarComentario/:id_comentario', checkAuth, borrarComentario)
 
 /* Equipo */
+// Inicio de equipo
+router.get('/equipo/inicioEquipo/:id_equipo', checkAuth, inicioEquipo)
 // Crear y gestionar equipo
 router.post('/equipo/crearEquipo', checkAuth, crearEquipo)
 router.get('/equipo/aceptarInvitacion/:token_UE', aceptarInvitacion)

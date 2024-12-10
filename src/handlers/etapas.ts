@@ -173,8 +173,7 @@ const agregarEtapa = async (req, res) => {
         for (const UE of usuariosInforme) {
             for (const usuarioEncontrado of UE) {
                 const datos = await Usuario.findOne({
-                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE },
-                    attributes: ['nombre_usuario', 'email_usuario']
+                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE }
                 })
                 const datosUsuario = {
                     nombre_usuario: datos.dataValues.nombre_usuario,
@@ -189,12 +188,16 @@ const agregarEtapa = async (req, res) => {
         try {
             for (const datos of datosUsuarios) {
                 if (datos.rol !== 'Líder') {
-                    await emailEtapaAgregada({
-                        email_usuario: datos.email_usuario,
-                        nombre_integrante: datos.nombre_usuario,
-                        email_lider: email_creador,
-                        nombre_proyecto: proyecto.dataValues.nombre_proyecto
-                    })
+                    // Verificamos el permiso del usuario en cuestión
+                    const pref_recordatorio = datos.dataValues.pref_recordatorio
+                    if (pref_recordatorio) {
+                        await emailEtapaAgregada({
+                            email_usuario: datos.email_usuario,
+                            nombre_integrante: datos.nombre_usuario,
+                            email_lider: email_creador,
+                            nombre_proyecto: proyecto.dataValues.nombre_proyecto
+                        })
+                    }
                 }
             }
         } catch (error) {
@@ -305,8 +308,7 @@ const modificarEtapa = async (req, res) => {
         for (const UE of usuariosInforme) {
             for (const usuarioEncontrado of UE) {
                 const datos = await Usuario.findOne({
-                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE },
-                    attributes: ['nombre_usuario', 'email_usuario']
+                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE }
                 })
                 const datosUsuario = {
                     nombre_usuario: datos.dataValues.nombre_usuario,
@@ -321,12 +323,16 @@ const modificarEtapa = async (req, res) => {
         try {
             for (const datos of datosUsuarios) {
                 if (datos.rol !== 'Líder') {
-                    await emailEtapaModificada({
-                        email_usuario: datos.email_usuario,
-                        nombre_integrante: datos.nombre_usuario,
-                        email_lider: email_creador,
-                        nombre_proyecto: proyecto.dataValues.nombre_proyecto
-                    })
+                    // Verificamos el permiso del usuario en cuestión
+                    const pref_recordatorio = datos.dataValues.pref_recordatorio
+                    if (pref_recordatorio) {
+                        await emailEtapaModificada({
+                            email_usuario: datos.email_usuario,
+                            nombre_integrante: datos.nombre_usuario,
+                            email_lider: email_creador,
+                            nombre_proyecto: proyecto.dataValues.nombre_proyecto
+                        })
+                    }
                 }
             }
         } catch (error) {
@@ -387,8 +393,7 @@ const eliminarEtapa = async (req, res) => {
         for (const UE of usuariosInforme) {
             for (const usuarioEncontrado of UE) {
                 const datos = await Usuario.findOne({
-                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE },
-                    attributes: ['nombre_usuario', 'email_usuario']
+                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE }
                 })
                 const datosUsuario = {
                     nombre_usuario: datos.dataValues.nombre_usuario,
@@ -403,12 +408,16 @@ const eliminarEtapa = async (req, res) => {
         try {
             for (const datos of datosUsuarios) {
                 if (datos.rol !== 'Líder') {
-                    await emailEtapaEliminada({
-                        email_usuario: datos.email_usuario,
-                        nombre_integrante: datos.nombre_usuario,
-                        email_lider: email_creador,
-                        nombre_proyecto: proyecto.dataValues.nombre_proyecto
-                    })
+                    // Verificamos el permiso del usuario en cuestión
+                    const pref_recordatorio = datos.dataValues.pref_recordatorio
+                    if (pref_recordatorio) {
+                        await emailEtapaEliminada({
+                            email_usuario: datos.email_usuario,
+                            nombre_integrante: datos.nombre_usuario,
+                            email_lider: email_creador,
+                            nombre_proyecto: proyecto.dataValues.nombre_proyecto
+                        })
+                    }
                 }
             }
         } catch (error) {

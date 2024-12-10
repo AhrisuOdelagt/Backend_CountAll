@@ -396,8 +396,7 @@ const modificarProyecto = async (req, res) => {
         for (const UE of usuariosInforme) {
             for (const usuarioEncontrado of UE) {
                 const datos = await Usuario.findOne({
-                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE },
-                    attributes: ['nombre_usuario', 'email_usuario']
+                    where: { id_usuario: usuarioEncontrado.dataValues.id_usuario_fk_UE }
                 })
                 const datosUsuario = {
                     nombre_usuario: datos.dataValues.nombre_usuario,
@@ -412,12 +411,16 @@ const modificarProyecto = async (req, res) => {
         try {
             for (const datos of datosUsuarios) {
                 if (datos.rol !== 'Líder') {
-                    await emailProyectoModificado({
-                        email_usuario: datos.email_usuario,
-                        nombre_integrante: datos.nombre_usuario,
-                        email_creador: email_creador,
-                        nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto
-                    })
+                    // Verificamos el permiso del usuario en cuestión
+                    const pref_recordatorio = datos.dataValues.pref_recordatorio
+                    if (pref_recordatorio) {
+                        await emailProyectoModificado({
+                            email_usuario: datos.email_usuario,
+                            nombre_integrante: datos.nombre_usuario,
+                            email_creador: email_creador,
+                            nombre_proyecto: proyectoEncontrado.dataValues.nombre_proyecto
+                        })
+                    }
                 }
             }
         } catch (error) {
@@ -435,10 +438,337 @@ const modificarProyecto = async (req, res) => {
     }
 }
 
+const verEstadisticas = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Calculamos las estadísticas
+    const { nombre_proyecto } = req.params
+    try {
+        /* Calculamos el avance general del proyecto */
+        let total_tareas = 0
+        let tareas_porHacer = 0
+        let tareas_enProgreso = 0
+        let tareas_completadas = 0
+        let tareas_criticas = 0
+        let porcentaje_avance = 0
+        const proyectoEncontrado = await Proyecto.findOne({
+            where: { nombre_proyecto }
+        })
+        const etapasProyecto = await Etapa.findAll({
+            where: { id_proyecto_fk_etapa: proyectoEncontrado.dataValues.id_proyecto }
+        })
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa }
+            })
+            total_tareas += tareasEncontradas.length
+            console.log(total_tareas)
+            // Revisamos por tarea el estado
+            for (const tarea of tareasEncontradas) {
+                const estado = tarea.dataValues.estado_tarea
+                if (estado === 'Completado') {
+                    tareas_completadas += 1
+                }
+                if (estado === 'Por hacer') {
+                    tareas_porHacer += 1
+                }
+                if (estado === 'En progreso') {
+                    tareas_enProgreso += 1
+                }
+                // Revisamos si la tarea es crítica
+                const prioridad = tarea.dataValues.prioridad_tarea
+                if (prioridad === 'Alta') {
+                    tareas_criticas += 1
+                }
+            }
+        }
+
+        // Calculamos porcentaje general de avance
+        porcentaje_avance = (100 * tareas_completadas) / total_tareas
+
+        // Conjuntamos la información
+        const inicio_estadisticas = {
+            porcentaje_avance: Math.round(porcentaje_avance * 100) / 100,
+            tareas_criticas: tareas_criticas
+        }
+
+        /* Conjuntamos los datos para el grafico */
+        const datos_grafico_avance = {
+            total_tareas: total_tareas,
+            tareas_porHacer: tareas_porHacer,
+            tareas_enProgreso: tareas_enProgreso,
+            tareas_completadas: tareas_completadas
+        }
+
+        /* Conjuntamos el rendimiento de cada miembro */
+        const equiposProyecto = await EquipoProyecto.findAll({
+            where: { id_proyecto_fk_clas: proyectoEncontrado.dataValues.id_proyecto }
+        })
+        // Encontramos todas las tareas por proyecto
+        const listaUsuariosCompleta_Rend = {}
+
+        for (const equipo of equiposProyecto) {
+            // Buscamos las tareas completadas usuario por usuario
+            const datosUsuarioEquipo = await UsuarioEquipo.findAll({
+                where: { id_equipo_fk_UE: equipo.dataValues.id_equipo_fk_clas }
+            })
+
+            // Revisamos miembro por miembro sus tareas completadas
+            for (const datosIntegrante of datosUsuarioEquipo) {
+                const completadasIntegrante = datosIntegrante.dataValues.tareas_completadas
+
+                // Encontramos al usuario para encontrar su username
+                const integranteEncontrado = await Usuario.findOne({
+                    where: { id_usuario: datosIntegrante.dataValues.id_usuario_fk_UE }
+                })
+
+                const usernameIntegrante = integranteEncontrado?.dataValues.nombre_usuario
+
+                // Consolidamos las tareas completadas en el objeto intermedio
+                if (listaUsuariosCompleta_Rend[usernameIntegrante]) {
+                    listaUsuariosCompleta_Rend[usernameIntegrante] += completadasIntegrante
+                } else {
+                    listaUsuariosCompleta_Rend[usernameIntegrante] = completadasIntegrante
+                }
+            }
+        }
+
+        // Transformamos el objeto intermedio en un array final
+        const listaUsuariosFinal = Object.entries(listaUsuariosCompleta_Rend).map(([username_integrante, revisadas_integrante]) => ({
+            username_integrante,
+            revisadas_integrante
+        }))
+
+        /* Conjuntamos el tiempo dedicado de cada miembro */
+        const listaUsuariosCompleta_Temp = {}
+        // Buscamos las tareas por etapa
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa }
+            })
+            // Revisamos el estado de cada tarea
+            for (const tarea of tareasEncontradas) {
+                const estado = tarea.dataValues.estado_tarea
+                // Si la tarea está completada, revisamos los tiempos de entrega de cada usuario asignado
+                if (estado === 'Completado') {
+                    const start = Math.round(new Date(tarea.dataValues.fecha_inicio_tarea).getTime() / 1000)
+                    // Buscamos por usuario el tiempo de entrega
+                    const entregaAsignados = await UsuarioTareaEquipo.findAll({
+                        where: { id_tarea_fk_UTE: tarea.dataValues.id_tarea }
+                    })
+                    for (const asignado of entregaAsignados) {
+                        // Encontramos al usuario
+                        const asignadoEncontrado = await Usuario.findOne({
+                            where: { id_usuario: asignado.dataValues.id_usuario_fk_UTE }
+                        })
+                        const datosEquipoAsignados = await UsuarioEquipo.findAll({
+                            where: { id_usuario_fk_UE: asignado.dataValues.id_usuario_fk_UTE }
+                        })
+                        // Calculamos el total de tareas completadas para el asignado
+                        let total_completadas = 0
+                        for (const datosEquipoAsignado of datosEquipoAsignados) {
+                            total_completadas += datosEquipoAsignado.dataValues.tareas_completadas
+                        }
+
+                        const username_asignado = asignadoEncontrado.dataValues.nombre_usuario
+                        const fecha_entrega = Math.round(new Date(asignado.dataValues.fecha_asignacion).getTime() / 1000)
+                        const horas_dedicadas = Math.round(((fecha_entrega - start) / 3600) * 100) / 100
+
+                        // Consolidamos las tareas completadas en el objeto intermedio
+                        if (listaUsuariosCompleta_Temp[username_asignado]) {
+                            listaUsuariosCompleta_Temp[username_asignado] += horas_dedicadas
+                        } else {
+                            listaUsuariosCompleta_Temp[username_asignado] = horas_dedicadas
+                        }
+                    }
+                }
+            }
+        }
+
+        // Transformamos el objeto intermedio en un array final
+        const listaUsuariosFinal_Temp = Object.entries(listaUsuariosCompleta_Temp).map(([username_asignado, horas_dedicadas]) => ({
+            username_asignado,
+            horas_dedicadas
+        }))
+
+        /* Generamos la tabla de tareas por estado */
+        let tareasProyecto = []
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa },
+                attributes: [
+                    'id_tarea',
+                    'nombre_tarea',
+                    'fecha_fin_tarea',
+                    'estado_tarea',
+                    'prioridad_tarea',
+                ],
+            })
+            tareasProyecto = tareasProyecto.concat(tareasEncontradas.map(tarea => tarea.dataValues))
+        }
+
+        // Buscamos a los asignados de cada tarea
+        const tareas_equipo = []
+        for (const tarea of tareasProyecto) {
+            const usuariosAsignados = []
+            // Localizamos a los asignados por tarea
+            const asignadosTarea = await UsuarioTareaEquipo.findAll({
+                where: { id_tarea_fk_UTE: tarea.id_tarea }
+            })
+            // Obtenemos los datos necesarios para los usuarios
+            for (const usuarioTabla of asignadosTarea) {
+                const usuarioEncontrado = await Usuario.findOne({
+                    where: { id_usuario: usuarioTabla.dataValues.id_usuario_fk_UTE },
+                    attributes: ['nombre_usuario', 'url_avatar']
+                })
+                usuariosAsignados.push(usuarioEncontrado)
+            }
+            // Recopilamos los datos
+            const datosTarea = {
+                datos_tarea: tarea,
+                asignados: usuariosAsignados
+            }
+            tareas_equipo.push(datosTarea)
+        }
+
+        /* Generamos la tabla de miembros y desempeño */
+        interface UsuarioDesempeno {
+            totalHoras: number
+            totalCompletadas: number
+            totalAsignadas: number
+        }
+
+        // Inicializamos el objeto temporal con el tipo adecuado
+        const listaUsuariosCompleta_Des: { [username: string]: UsuarioDesempeno } = {}
+
+        // Buscamos las tareas por etapa
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa }
+            })
+
+            // Revisamos el estado de cada tarea
+            for (const tarea of tareasEncontradas) {
+                const estado = tarea.dataValues.estado_tarea
+
+                // Si la tarea está completada, revisamos los tiempos de entrega de cada usuario asignado
+                if (estado === 'Completado') {
+                    const start = Math.round(new Date(tarea.dataValues.fecha_inicio_tarea).getTime() / 1000)
+
+                    // Buscamos por usuario el tiempo de entrega
+                    const entregaAsignados = await UsuarioTareaEquipo.findAll({
+                        where: { id_tarea_fk_UTE: tarea.dataValues.id_tarea }
+                    })
+
+                    for (const asignado of entregaAsignados) {
+                        // Encontramos al usuario asignado
+                        const asignadoEncontrado = await Usuario.findOne({
+                            where: { id_usuario: asignado.dataValues.id_usuario_fk_UTE }
+                        })
+
+                        // Calculamos el total de tareas completadas y asignadas en todos los equipos donde participa el usuario
+                        const datosEquipoAsignados = await UsuarioEquipo.findAll({
+                            where: { id_usuario_fk_UE: asignado.dataValues.id_usuario_fk_UTE }
+                        })
+
+                        let total_completadas = 0
+                        let total_asignadas = 0
+                        datosEquipoAsignados.forEach(equipo => {
+                            total_completadas += equipo.dataValues.tareas_completadas
+                            total_asignadas += equipo.dataValues.tareas_asignadas
+                        })
+
+                        const username_asignado = asignadoEncontrado?.dataValues.nombre_usuario || 'Desconocido'
+                        const fecha_entrega = Math.round(new Date(asignado.dataValues.fecha_asignacion).getTime() / 1000)
+                        const horas_dedicadas = (fecha_entrega - start) / 3600
+
+                        // Consolidamos los datos en el objeto temporal
+                        if (listaUsuariosCompleta_Des[username_asignado]) {
+                            listaUsuariosCompleta_Des[username_asignado].totalHoras += horas_dedicadas
+                            listaUsuariosCompleta_Des[username_asignado].totalCompletadas += total_completadas
+                            listaUsuariosCompleta_Des[username_asignado].totalAsignadas += total_asignadas
+                        } else {
+                            listaUsuariosCompleta_Des[username_asignado] = {
+                                totalHoras: horas_dedicadas,
+                                totalCompletadas: total_completadas,
+                                totalAsignadas: total_asignadas
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log(listaUsuariosCompleta_Des)
+        // Transformamos el objeto intermedio en un array final
+        const listaUsuariosCompleta_DesFin = Object.entries(listaUsuariosCompleta_Des).map(
+            ([username_asignado, { totalHoras, totalCompletadas, totalAsignadas }]) => ({
+                username_asignado,
+                total_horas_dedicadas: Math.round((totalHoras) * 100) / 100,
+                total_tareas_revisadas: totalCompletadas,
+                total_tareas_asignadas: totalAsignadas
+            })
+        )
+
+        console.log(listaUsuariosCompleta_DesFin)
+
+        /* Generamos la tabla de avance por etapa */
+        const datos_tabla_etapas = []
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa }
+            })
+
+            // Encontramos los datos
+            const total_tareas_etapa = tareasEncontradas.length
+            let tareas_completadas_etapa = 0
+            for (const tarea of tareasEncontradas) {
+                console.log(tarea.dataValues.estado_tarea)
+                if (tarea.dataValues.estado_tarea === 'Completado') {
+                    tareas_completadas_etapa += 1
+                }
+            }
+            // Calculamos el porcentaje de compleción de la etapa
+            const porcentaje_completado = Math.round(((100 * tareas_completadas_etapa) / total_tareas_etapa) * 100) / 100
+            // Generamos los datos y los adjuntamos
+            const datos_tabla_etapa = {
+                nomnbre_etapa: etapa.dataValues.nombre_etapa,
+                porcentaje_completado: porcentaje_completado
+            }
+            datos_tabla_etapas.push(datos_tabla_etapa)
+        }
+
+        /* Conjuntamos la información final */
+        const estadisticas_proyecto = {
+            inicio_estadisticas: inicio_estadisticas,
+            datos_grafico_avance: datos_grafico_avance,
+            datos_grafico_rendimiento: listaUsuariosFinal,
+            datos_grafico_dedicado: listaUsuariosFinal_Temp,
+            datos_tabla_tareas: tareas_equipo,
+            datos_tabla_desempeno: listaUsuariosCompleta_DesFin,
+            datos_tabla_etapas: datos_tabla_etapas
+        }
+
+        // Regresamos la información
+        res.json({
+            estadisticas_proyecto: estadisticas_proyecto
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Error al mostrar las estadísticas del proyecto' })
+    }
+}
+
 export {
     verProyectos,
     verProyecto,
     crearProyecto,
     proporcionarDetalles,
-    modificarProyecto
+    modificarProyecto,
+    verEstadisticas
 }

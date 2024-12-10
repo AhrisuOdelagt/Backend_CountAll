@@ -11,6 +11,9 @@ import EquipoProyecto from '../models/EquipoProyecto.model'
 import UsuarioEquipo from '../models/UsuarioEquipo.model'
 import PaginaBloqueada from '../models/PaginaBloqueada.model'
 import PaginaWeb from '../models/PaginaWeb.model'
+import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model'
+import Etapa from '../models/Etapa.model'
+import Tarea from '../models/Tarea.model'
 
 const verEquipos = async (req, res) => {
     // Verificamos una sesión iniciada
@@ -397,17 +400,21 @@ const asignarRoles = async (req, res) => {
 
         // Se notifica al usuario
         const email_lider = req.usuario.dataValues.email_usuario
-        try {
-            // Envío del correo de confirmación
-            await emailEquipoRolModificado({
-                email_usuario: usuarioEncontrado.dataValues.email_usuario,
-                nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
-                email_lider: email_lider,
-                nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
-                rol: req.body.rol
-            })
-        } catch (error) {
-            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de cambio de rol' })
+        // Verificamos el permiso del usuario en cuestión
+        const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+        if (pref_actividades) {
+            try {
+                // Envío del correo de confirmación
+                await emailEquipoRolModificado({
+                    email_usuario: usuarioEncontrado.dataValues.email_usuario,
+                    nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
+                    email_lider: email_lider,
+                    nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
+                    rol: req.body.rol
+                })
+            } catch (error) {
+                res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de cambio de rol' })
+            }
         }
 
         // Enviamos respuesta exitosa
@@ -571,24 +578,90 @@ const eliminarMiembro = async (req, res) => {
 
         // Se notifica al usuario
         const email_lider = req.usuario.dataValues.email_usuario
-        console.log(usuarioEncontrado.dataValues.nombre_usuario)
-        console.log(usuarioEncontrado.dataValues.email_usuario)
-        try {
-            // Envío del correo de confirmación
-            await emailEquipoMiembroEliminado({
-                email_usuario: usuarioEncontrado.dataValues.email_usuario,
-                nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
-                email_lider: email_lider,
-                nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
-            })
-        } catch (error) {
-            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de eliminación' })
+        // Verificamos el permiso del usuario en cuestión
+        const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+        if (pref_actividades) {
+            try {
+                // Envío del correo de confirmación
+                await emailEquipoMiembroEliminado({
+                    email_usuario: usuarioEncontrado.dataValues.email_usuario,
+                    nombre_integrante: usuarioEncontrado.dataValues.nombre_usuario,
+                    email_lider: email_lider,
+                    nombre_equipo: equipoEncontrado.dataValues.nombre_equipo,
+                })
+            } catch (error) {
+                res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación de eliminación' })
+            }
         }
 
         res.json({ msg: 'El miembro ha sido eliminado del equipo' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: 'Error al eliminar el miembro del equipo' })
+    }
+}
+
+const inicioEquipo = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Recuperamos la información del inicio del equipo
+    const { id_equipo } = req.params
+    try {
+        // Recuperamos los puntos totales
+        const datosEquipo = await UsuarioEquipo.findAll({
+            where: { id_equipo_fk_UE: id_equipo }
+        })
+        // Calculamos los puntos totales
+        let puntos_totales = 0
+        for (const integrante of datosEquipo) {
+            const puntosIntegrante = integrante.dataValues.puntuacion_local
+            puntos_totales += puntosIntegrante
+        }
+        // Calculamos las tareas completadas
+        let total_tareas = 0
+        let tareas_completadas = 0
+        const equipoProyecto = await EquipoProyecto.findOne({
+            where: { id_equipo_fk_clas: id_equipo }
+        })
+        const proyectoEncontrado = await Proyecto.findOne({
+            where: { id_proyecto: equipoProyecto.dataValues.id_proyecto_fk_clas }
+        })
+        const etapasProyecto = await Etapa.findAll({
+            where: { id_proyecto_fk_etapa: proyectoEncontrado.dataValues.id_proyecto }
+        })
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa }
+            })
+            total_tareas += tareasEncontradas.length
+            // Revisamos por tarea si éstas ya están completadas
+            for (const tarea of tareasEncontradas) {
+                const estado = tarea.dataValues.estado_tarea
+                if (estado === 'Completado') {
+                    tareas_completadas += 1
+                }
+            }
+        }
+
+        // Conjuntamos la información
+        const datos_inicio = {
+            puntos_totales: puntos_totales,
+            total_tareas: total_tareas,
+            tareas_completadas: tareas_completadas
+        }
+
+        // Regresamos mensaje de éxito
+        res.json({
+            datos_inicio: datos_inicio
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Error al mostrar la información de inicio' })
     }
 }
 
@@ -600,5 +673,6 @@ export {
     aceptarInvitacion,
     asignarRoles,
     agregarMiembro,
-    eliminarMiembro
+    eliminarMiembro,
+    inicioEquipo
 }

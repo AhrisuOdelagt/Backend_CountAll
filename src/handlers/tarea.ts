@@ -390,19 +390,23 @@ const asignarTarea = async (req, res) => {
             )
 
             /* Se les notifica sobre la tarea asignada */
-            try {
-                // Envío del correo de confirmación
-                await emailTareaAsignada({
-                    email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                    nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                    email_lider: usuario.dataValues.email_usuario,
-                    nombre_tarea: tarea.dataValues.nombre_tarea,
-                    descr_tarea: tarea.dataValues.descr_tarea,
-                    fecha_fin_tarea: tarea.dataValues.fecha_fin_tarea,
-                    nombre_equipo: equipo.dataValues.nombre_equipo
-                })
-            } catch (error) {
-                res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
+            // Verificamos las preferencias del usuario en cuestión
+            const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+            if (pref_actividades) {
+                try {
+                    // Envío del correo de confirmación
+                    await emailTareaAsignada({
+                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                        email_lider: usuario.dataValues.email_usuario,
+                        nombre_tarea: tarea.dataValues.nombre_tarea,
+                        descr_tarea: tarea.dataValues.descr_tarea,
+                        fecha_fin_tarea: tarea.dataValues.fecha_fin_tarea,
+                        nombre_equipo: equipo.dataValues.nombre_equipo
+                    })
+                } catch (error) {
+                    res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
+                }
             }
         }
 
@@ -522,15 +526,18 @@ const editarTarea = async (req, res) => {
         const usuariosAsociados = await UsuarioTareaEquipo.findAll({
             where: { id_tarea_fk_UTE: id_tarea }
         })
+        // let disminucion = 0
         for (const asociado of usuariosAsociados) {
             const usuarioEquipo = await UsuarioEquipo.findOne({
-                where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE }
+                where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: equipo.dataValues.id_equipo }
             })
+            console.log(usuarioEquipo.dataValues.tareas_asignadas)
 
             // Decrementamos las tareas asignadas
-            const disminucion = usuarioEquipo.dataValues.tareas_asignadas - 1
+            const disminucion = usuarioEquipo.dataValues.tareas_asignadas
+            console.log(colors.red.bold(`${disminucion}`))
             await UsuarioEquipo.update(
-                { tareas_asignadas: disminucion },
+                { tareas_asignadas: disminucion - 1 },
                 { where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: asociado.dataValues.id_equipo_fk_UTE }}
             )
         }
@@ -574,26 +581,44 @@ const editarTarea = async (req, res) => {
                 }
                 await UsuarioTareaEquipo.create(dataUsuarioTareaEquipo)
 
+                // Incrementamos las tareas asignadas para el usuario
+                const usuarioEquipo = await UsuarioEquipo.findOne({
+                    where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: equipo.dataValues.id_equipo }
+                })
+                // Incrementamos las tareas asignadas
+                console.log('previo')
+                const adicion = usuarioEquipo.dataValues.tareas_asignadas
+                console.log(colors.blue.bold(adicion))
+                await UsuarioEquipo.update(
+                    { tareas_asignadas: adicion + 1 },
+                    { where: { id_usuario_fk_UE: usuarioEquipo.dataValues.id_usuario_fk_UE, id_equipo_fk_UE: usuarioEquipo.dataValues.id_equipo_fk_UE }}
+                )
+                console.log('posterior')
+
                 /* Se les notifica sobre la tarea asignada */
-                try {
-                    // Envío del correo de confirmación
-                    await emailTareaEditada({
-                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                        email_lider: usuario.dataValues.email_usuario,
-                        nombre_tarea: tarea.dataValues.nombre_tarea,
-                        descr_tarea: tarea.dataValues.descr_tarea,
-                        fecha_fin_tarea: tarea.dataValues.fecha_fin_tarea,
-                        nombre_equipo: equipo.dataValues.nombre_equipo
-                    })
-                } catch (error) {
-                    res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
+                // Verificamos las preferencias del usuario en cuestión
+                const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                if (pref_actividades) {
+                    try {
+                        // Envío del correo de confirmación
+                        await emailTareaEditada({
+                            email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                            nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                            email_lider: usuario.dataValues.email_usuario,
+                            nombre_tarea: tarea.dataValues.nombre_tarea,
+                            descr_tarea: tarea.dataValues.descr_tarea,
+                            fecha_fin_tarea: tarea.dataValues.fecha_fin_tarea,
+                            nombre_equipo: equipo.dataValues.nombre_equipo
+                        })
+                    } catch (error) {
+                        res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
+                    }
                 }
             }
         }
 
         // Buscamos a los usuarios asociados con la tarea y quitamos la tarea asignada
-        const usuariosAsociados2 = await UsuarioTareaEquipo.findAll({
+        /*const usuariosAsociados2 = await UsuarioTareaEquipo.findAll({
             where: { id_tarea_fk_UTE: id_tarea }
         })
         for (const asociado of usuariosAsociados2) {
@@ -607,7 +632,7 @@ const editarTarea = async (req, res) => {
                 { tareas_asignadas: adicion },
                 { where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: asociado.dataValues.id_equipo_fk_UTE }}
             )
-        }
+        }*/
 
         // Enviamos respuesta exitosa
         res.json({
@@ -647,6 +672,19 @@ const cambiarEstado = async (req, res) => {
         })
         if (!tareaEncontrada) {
             return res.status(500).json({ error: 'La tarea no existe' })
+        }
+
+        // Verificamos que la tarea no haya sido revisada antes
+        if (tareaEncontrada.dataValues.dificultad_tarea === 'Revisada') {
+            return res.status(500).json({ error: 'La tarea ya ha sido revisada' })
+        }
+
+        // Verificamos que la fecha de inicio de la tarea ya haya llegado
+        const start = Math.round(new Date(tareaEncontrada.dataValues.fecha_inicio_tarea).getTime() / 1000)
+        const now = Math.round(Date.now() / 1000)
+        if ((now - start) <= 0) {
+            console.log('Esta tarea aún no puede entregarse')
+            return res.status(500).json({ error: 'Esta tarea aún no puede entregarse' })
         }
 
         // Verificamos que el usuario tenga asignada la tarea o que sea un líder
@@ -691,7 +729,7 @@ const cambiarEstado = async (req, res) => {
             const puntaje_obtenido = Math.round(NOX_Pt(t, T, k))
             // Otorgamos el puntaje a todos los asignados de la tarea
             await UsuarioTareaEquipo.update(
-                { puntuacion_provisional: puntaje_obtenido },
+                { puntuacion_provisional: puntaje_obtenido, fecha_asignacion: Date.now() },
                 { where: { id_tarea_fk_UTE: tareaEncontrada.dataValues.id_tarea } }
             )
 
@@ -757,16 +795,20 @@ const cambiarEstado = async (req, res) => {
                     }
 
                     /* Notificamos a los asignados acerca de su recompensa */
-                    try {
-                        // Envío del correo de confirmación
-                        await emailCambiarEstadoFT({
-                            email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                            nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                            nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                            recompensa_obtenida: recompensa_obtenida,
-                        })
-                    } catch (error) {
-                        res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación (recompensas)' })
+                    // Verificamos las preferencias del usuario en cuestión
+                    const pref_puntajes = usuarioEncontrado.dataValues.pref_puntajes
+                    if (pref_puntajes) {
+                        try {
+                            // Envío del correo de confirmación
+                            await emailCambiarEstadoFT({
+                                email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                                nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                                nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                                recompensa_obtenida: recompensa_obtenida,
+                            })
+                        } catch (error) {
+                            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación (recompensas)' })
+                        }
                     }
                 }
             }
@@ -788,17 +830,21 @@ const cambiarEstado = async (req, res) => {
                 const rol = integrante.dataValues.rol
                 if (rol === 'Líder') {
                     // Envíamos el correo electrónico
-                    try {
-                        // Envío del correo de confirmación
-                        await emailCambiarEstadoLider({
-                            email_lider: usuarioEncontrado.dataValues.email_usuario,
-                            nombre_lider: usuarioEncontrado.dataValues.nombre_usuario,
-                            nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                            nombre_equipo: equipo.dataValues.nombre_equipo,
-                        })
-                    } catch (error) {
-                        console.log(error)
-                        res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación (avisos líderes)' })
+                    // Verificamos las preferencias del usuario en cuestión
+                    const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                    if (pref_actividades) {
+                        try {
+                            // Envío del correo de confirmación
+                            await emailCambiarEstadoLider({
+                                email_lider: usuarioEncontrado.dataValues.email_usuario,
+                                nombre_lider: usuarioEncontrado.dataValues.nombre_usuario,
+                                nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                                nombre_equipo: equipo.dataValues.nombre_equipo,
+                            })
+                        } catch (error) {
+                            console.log(error)
+                            res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación (avisos líderes)' })
+                        }
                     }
                 }
             }
@@ -863,6 +909,11 @@ const revisarTarea = async (req, res) => {
             return res.status(500).json({ error: 'La tarea no existe' })
         }
 
+        // Verificamos que la tarea no haya sido revisada antes
+        if (tareaEncontrada.dataValues.dificultad_tarea === 'Revisada') {
+            return res.status(500).json({ error: 'La tarea ya ha sido revisada' })
+        }
+
         // Buscamos al equipo
         const usuarioTareaEquipo = await UsuarioTareaEquipo.findOne({
             where: { id_tarea_fk_UTE: id_tarea }
@@ -870,6 +921,7 @@ const revisarTarea = async (req, res) => {
         const equipo = await Equipo.findOne({
             where: { id_equipo: usuarioTareaEquipo.dataValues.id_equipo_fk_UTE }
         })
+        console.log(equipo.dataValues.nombre_equipo)
 
         // Verificamos que esté en un estado de revisión
         if (!tareaEncontrada.dataValues.is_locked) {
@@ -881,9 +933,6 @@ const revisarTarea = async (req, res) => {
         // Si hay amonestación, se aplican los modificadores
         if (amonestacion) {
             // Obtenemos el puntaje provisional de la tarea
-            const asignado = await UsuarioTareaEquipo.findOne({
-                where: { id_tarea_fk_UTE: id_tarea }
-            })
             const asignados = await UsuarioTareaEquipo.findAll({
                 where: { id_tarea_fk_UTE: id_tarea }
             })
@@ -901,24 +950,31 @@ const revisarTarea = async (req, res) => {
                 req.body.nox_no_especificacion
             ]
             const acumulado_amon = NOX_Po(booleanos_amon)
-            const puntaje = NOX(asignado.dataValues.puntuacion_provisional, acumulado_amon)
 
             // Colocamos el puntaje provisional en el local de los usuarios asignados
             for (const usuario of asignados) {
                 const miembroEquipo = await UsuarioEquipo.findOne({
-                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE }
+                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: usuario.dataValues.id_equipo_fk_UTE }
                 })
-                const local = miembroEquipo.dataValues.puntuacion_local + puntaje
+                // Obtenemos el puntaje provisional de la tarea
+                const asignado = await UsuarioTareaEquipo.findOne({
+                    where: { id_tarea_fk_UTE: id_tarea, id_usuario_fk_UTE: miembroEquipo.dataValues.id_usuario_fk_UE, id_equipo_fk_UTE: equipo.dataValues.id_equipo }
+                })
+                const puntaje = NOX(asignado.dataValues.puntuacion_provisional, acumulado_amon)
+                const local = miembroEquipo.dataValues.puntuacion_local
                 const asignadas = miembroEquipo.dataValues.tareas_asignadas
+                console.log(colors.magenta.bold(asignadas))
                 const completadas = miembroEquipo.dataValues.tareas_completadas
+                console.log(colors.blue.bold(completadas))
+
                 // Actualizamos las estadísticas locales
                 await UsuarioEquipo.update(
                     {
-                        puntuacion_local: local,
+                        puntuacion_local: local + puntaje,
                         tareas_asignadas: asignadas - 1,
                         tareas_completadas: completadas + 1
                     },
-                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE:equipo.dataValues.id_equipo } }
+                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: equipo.dataValues.id_equipo } }
                 )
                 // Actualizamos las estadísticas globales
                 const usuarioEncontrado = await Usuario.findOne({
@@ -936,17 +992,21 @@ const revisarTarea = async (req, res) => {
 
                 /* Se informa a los asignados de la tarea */
                 const puntaje_obtenido = await UsuarioEquipo.findOne({
-                    where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario }
+                    where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: equipo.dataValues.id_equipo }
                 })
                 try {
                     // Envío del correo de confirmación
-                    await emailTareaRevisada({
-                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                        nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                        nombre_equipo: equipo.dataValues.nombre_equipo,
-                        puntaje_obtenido: puntaje_obtenido.dataValues.puntuacion_local,
-                    })
+                    // Verificamos las preferencias del usuario en cuestión
+                    const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                    if (pref_actividades) {
+                        await emailTareaRevisada({
+                            email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                            nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                            nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                            nombre_equipo: equipo.dataValues.nombre_equipo,
+                            puntaje_obtenido: puntaje_obtenido
+                        })
+                    }
                 } catch (error) {
                     console.log(error)
                     res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
@@ -956,30 +1016,32 @@ const revisarTarea = async (req, res) => {
         // Si no hay, se extrae la puntuación provicional y se suma a la clasificación
         else {
             // Obtenemos el puntaje provisional de la tarea
-            const asignado = await UsuarioTareaEquipo.findOne({
-                where: { id_tarea_fk_UTE: id_tarea }
-            })
             const asignados = await UsuarioTareaEquipo.findAll({
                 where: { id_tarea_fk_UTE: id_tarea }
             })
-            const puntaje = asignado.dataValues.puntuacion_provisional
+            // const puntaje = asignado.dataValues.puntuacion_provisional
 
             // Colocamos el puntaje provisional en el local de los usuarios asignados
             for (const usuario of asignados) {
                 const miembroEquipo = await UsuarioEquipo.findOne({
-                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE }
+                    where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: usuario.dataValues.id_equipo_fk_UTE }
                 })
-                const local = miembroEquipo.dataValues.puntuacion_local + puntaje
+                // Obtenemos el puntaje provisional de la tarea
+                const asignado = await UsuarioTareaEquipo.findOne({
+                    where: { id_tarea_fk_UTE: id_tarea, id_usuario_fk_UTE: miembroEquipo.dataValues.id_usuario_fk_UE, id_equipo_fk_UTE: equipo.dataValues.id_equipo }
+                })
+                const puntaje = asignado.dataValues.puntuacion_provisional
+                const local = miembroEquipo.dataValues.puntuacion_local
                 const asignadas = miembroEquipo.dataValues.tareas_asignadas
                 const completadas = miembroEquipo.dataValues.tareas_completadas
                 // Actualizamos las estadísticas locales
                 await UsuarioEquipo.update(
                     {
-                        puntuacion_local: local,
+                        puntuacion_local: local + puntaje,
                         tareas_asignadas: asignadas - 1,
                         tareas_completadas: completadas + 1
                     },
-                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE:equipo.dataValues.id_equipo } }
+                    { where: { id_usuario_fk_UE: usuario.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: equipo.dataValues.id_equipo } }
                 )
                 // Actualizamos las estadísticas globales
                 const usuarioEncontrado = await Usuario.findOne({
@@ -997,23 +1059,33 @@ const revisarTarea = async (req, res) => {
 
                 /* Se informa a los asignados de la tarea */
                 const puntaje_obtenido = await UsuarioEquipo.findOne({
-                    where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario }
+                    where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: equipo.dataValues.id_equipo }
                 })
                 try {
                     // Envío del correo de confirmación
-                    await emailTareaRevisada({
-                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                        nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                        nombre_equipo: equipo.dataValues.nombre_equipo,
-                        puntaje_obtenido: puntaje_obtenido.dataValues.puntuacion_local,
-                    })
+                    // Verificamos las preferencias del usuario en cuestión
+                    const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                    if (pref_actividades) {
+                        await emailTareaRevisada({
+                            email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                            nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                            nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                            nombre_equipo: equipo.dataValues.nombre_equipo,
+                            puntaje_obtenido: puntaje_obtenido
+                        })
+                    }
                 } catch (error) {
                     console.log(error)
                     res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
                 }
             }
         }
+
+        // Actualizamos la tarea
+        await Tarea.update(
+            { dificultad_tarea: 'Revisada' },
+            { where: { id_tarea } }
+        )
 
         // Enviar respuesta exitosa
         res.json({
@@ -1045,6 +1117,11 @@ const desbloquearTarea = async (req, res) => {
             return res.status(500).json({ error: 'La tarea no existe' })
         }
 
+        // Verificamos que la tarea no haya sido revisada antes
+        if (tareaEncontrada.dataValues.dificultad_tarea === 'Revisada') {
+            return res.status(500).json({ error: 'La tarea ya ha sido revisada' })
+        }
+
         // Actualizamos el estado de la tarea
         await Tarea.update(
             { estado_tarea: 'En progreso', is_locked: is_locked },
@@ -1073,12 +1150,16 @@ const desbloquearTarea = async (req, res) => {
             // Intentamos enviar el correo
             try {
                 // Envío del correo de confirmación
-                await emailTareaDesbloqueada({
-                    email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                    nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                    nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                    nombre_equipo: equipo.dataValues.nombre_equipo,
-                })
+                // Verificamos las preferencias del usuario en cuestión
+                const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                if (pref_actividades) {
+                    await emailTareaDesbloqueada({
+                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                        nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                        nombre_equipo: equipo.dataValues.nombre_equipo,
+                    })
+                }
             } catch (error) {
                 console.log(error)
                 res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
@@ -1119,7 +1200,7 @@ const eliminarTarea = async (req, res) => {
         })
         for (const asociado of usuariosAsociados) {
             const usuarioEquipo = await UsuarioEquipo.findOne({
-                where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE }
+                where: { id_usuario_fk_UE: asociado.dataValues.id_usuario_fk_UTE, id_equipo_fk_UE: asociado.dataValues.id_equipo_fk_UTE }
             })
             const usuarioEncontrado = await Usuario.findOne({
                 where: { id_usuario: usuarioEquipo.dataValues.id_usuario_fk_UE }
@@ -1137,13 +1218,17 @@ const eliminarTarea = async (req, res) => {
 
             try {
                 // Envío del correo de confirmación
-                await emailTareaEliminada({
-                    email_asignado: usuarioEncontrado.dataValues.email_usuario,
-                    nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
-                    email_lider: usuario.dataValues.email_usuario,
-                    nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
-                    nombre_equipo: equipo.dataValues.nombre_equipo
-                })
+                // Verificamos las preferencias del usuario en cuestión
+                const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+                if (pref_actividades) {
+                    await emailTareaEliminada({
+                        email_asignado: usuarioEncontrado.dataValues.email_usuario,
+                        nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
+                        email_lider: usuario.dataValues.email_usuario,
+                        nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
+                        nombre_equipo: equipo.dataValues.nombre_equipo
+                    })
+                }
             } catch (error) {
                 res.status(500).json({ error: 'Hubo un error al enviar el correo de notificación' })
             }
