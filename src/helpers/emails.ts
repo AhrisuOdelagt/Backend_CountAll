@@ -79,7 +79,7 @@ const emailEquipos = async (datos) => {
         <p>Hola, ${nombre_integrante}, usted ha sido invitado a un equipo de trabajo en CountAll por ${nombre_lider}.</p>
         <p>Pertenece al equipo «${nombre_equipo}» vinculado al proyecto «${nombre_proyecto}».</p>
         <p>Para confirmar la invitación, haga clic en el siguiente enlace:</p>
-        <p>http://localhost:4444/api/equipo/aceptarInvitacion/${token_UE}</p>
+        <p>http://localhost:5173/invitation-accepted/${token_UE}</p>
         <p></b>Asimismo, recomendamos contactar con el líder de su equipo para solicitar más información a través de su correo electrónico: ${email_lider}.</p>
         <p>Si usted no creó esta cuenta o está vinculado con CountAll, por favor ignore este correo electrónico.</p>
         `

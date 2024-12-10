@@ -23,7 +23,8 @@ import {
     crearProyecto,
     proporcionarDetalles,
     modificarProyecto,
-    verEstadisticas
+    verEstadisticas,
+    generarResumen
 } from '../handlers/proyecto'
 /* Funciones Etapa */
 import {
@@ -117,6 +118,7 @@ router.put('/usuario/modificarPreferencias', checkAuth, modificarPreferencias)
 router.get('/proyecto/misProyectos', checkAuth, verProyectos)
 router.get('/proyecto/misProyectos/:nombre_proyecto', checkAuth, verProyecto)
 router.get('/proyecto/verEstadisticas/:nombre_proyecto', checkAuth, verEstadisticas)
+router.get('/proyecto/verResumen/:nombre_proyecto', checkAuth, generarResumen)
 // Creación del proyecto
 router.post('/proyecto/crearProyecto', checkAuth, crearProyecto)
 router.post('/proyecto/crearProyecto/:nombre_proyecto', checkAuth, proporcionarDetalles)

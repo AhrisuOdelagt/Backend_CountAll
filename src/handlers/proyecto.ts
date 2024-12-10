@@ -576,7 +576,10 @@ const verEstadisticas = async (req, res) => {
 
                         const username_asignado = asignadoEncontrado.dataValues.nombre_usuario
                         const fecha_entrega = Math.round(new Date(asignado.dataValues.fecha_asignacion).getTime() / 1000)
-                        const horas_dedicadas = Math.round(((fecha_entrega - start) / 3600) * 100) / 100
+                        let horas_dedicadas = Math.round(((fecha_entrega - start) / 3600) * 100) / 100
+                        if (horas_dedicadas < 0) {
+                            horas_dedicadas *= -1
+                        }
 
                         // Consolidamos las tareas completadas en el objeto intermedio
                         if (listaUsuariosCompleta_Temp[username_asignado]) {
@@ -684,7 +687,10 @@ const verEstadisticas = async (req, res) => {
 
                         const username_asignado = asignadoEncontrado?.dataValues.nombre_usuario || 'Desconocido'
                         const fecha_entrega = Math.round(new Date(asignado.dataValues.fecha_asignacion).getTime() / 1000)
-                        const horas_dedicadas = (fecha_entrega - start) / 3600
+                        let horas_dedicadas = (fecha_entrega - start) / 3600
+                        if (horas_dedicadas < 0) {
+                            horas_dedicadas *= -1
+                        }
 
                         // Consolidamos los datos en el objeto temporal
                         if (listaUsuariosCompleta_Des[username_asignado]) {
@@ -764,11 +770,93 @@ const verEstadisticas = async (req, res) => {
     }
 }
 
+const generarResumen = async (req, res) => {
+    // Verificamos una sesión iniciada
+    const usuario = req.usuario
+    if (!usuario) {
+        return res.status(500).json({ error: 'No hay sesión iniciada' })
+    }
+
+    // Generamos el resumen
+    const { nombre_proyecto } = req.params
+    try {
+        // Encontramos el proyecto
+        const proyectoEncontrado = await Proyecto.findOne({
+            where: { nombre_proyecto }
+        })
+        // Recuperamos la información directa
+        const fecha_inicio = proyectoEncontrado.dataValues.fecha_inicio_proyecto
+        const fecha_fin = proyectoEncontrado.dataValues.fecha_fin_proyecto
+        const estado = proyectoEncontrado.dataValues.estado_proyecto
+        // Buscamos las tareas
+        // Buscamos las etapas asociadas al proyecto
+        const etapasProyecto = await Etapa.findAll({
+            where: { id_proyecto_fk_etapa: proyectoEncontrado.dataValues.id_proyecto }
+        })
+
+        // Juntamos todas las tareas del proyecto
+        let tareasProyecto = []
+        for (const etapa of etapasProyecto) {
+            const tareasEncontradas = await Tarea.findAll({
+                where: { id_etapa_fk_tarea: etapa.dataValues.id_etapa },
+                attributes: [
+                    'id_tarea',
+                    'nombre_tarea',
+                    'descr_tarea',
+                    'fecha_inicio_tarea',
+                    'fecha_fin_tarea',
+                    'estado_tarea',
+                    'prioridad_tarea',
+                    'dificultad_tarea',
+                    'comentarios_tarea'
+                ],
+            })
+            tareasProyecto = tareasProyecto.concat(tareasEncontradas.map(tarea => tarea.dataValues))
+        }
+        // Contamos las tareas
+        const total_tareas = tareasProyecto.length
+        // Contamos tareas pendientes y completadas
+        let tareas_completadas = 0
+        let tareas_pendientes = 0
+        for (const tarea of tareasProyecto) {
+            if (tarea.estado_tarea === 'Completado') {
+                tareas_completadas += 1
+            } else {
+                tareas_pendientes += 1
+            }
+        }
+        // Calculamos el progreso del proyecto
+        const progreso_general = (tareas_completadas * 100) / total_tareas
+        const redondeado = Math.round(progreso_general * 100) / 100
+
+        // Generamos el JSON del resumen
+        const resumen_proyecto ={
+            fecha_inicio: fecha_inicio,
+            fecha_fin: fecha_fin,
+            progreso_general: redondeado,
+            estado: estado,
+            total_tareas: total_tareas,
+            tareas_completadas: tareas_completadas,
+            tareas_pendientes: tareas_pendientes
+        }
+
+        // Regresamos los datos encontrados
+        res.json({
+            resumen_proyecto: resumen_proyecto
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: 'Error al mostrar el resumen de proyecto' })
+    }
+}
+
 export {
     verProyectos,
     verProyecto,
     crearProyecto,
     proporcionarDetalles,
     modificarProyecto,
-    verEstadisticas
+    verEstadisticas,
+    generarResumen
 }

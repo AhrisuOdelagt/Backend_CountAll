@@ -641,7 +641,7 @@ const inicioEquipo = async (req, res) => {
             // Revisamos por tarea si éstas ya están completadas
             for (const tarea of tareasEncontradas) {
                 const estado = tarea.dataValues.estado_tarea
-                if (estado === 'Completado') {
+                if (estado === 'Completado' || estado === 'Revisada') {
                     tareas_completadas += 1
                 }
             }

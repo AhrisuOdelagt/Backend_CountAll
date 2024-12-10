@@ -282,7 +282,7 @@ const asignarTarea = async (req, res) => {
         // Calculamos la fecha óptima (según dificultad)
         let fecha_optima_tarea = null
         if (req.body.dificultad_tarea === 'Fácil') {
-            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - ((fechaInicio.getTime()) / 4) * 3))
+            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - fechaInicio.getTime()) / 4)
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else if (req.body.dificultad_tarea === 'Media') {
@@ -290,7 +290,8 @@ const asignarTarea = async (req, res) => {
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else if (req.body.dificultad_tarea === 'Difícil') {
-            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - fechaInicio.getTime()) / 4)
+            const triple = ((fechaFin.getTime() - fechaInicio.getTime()) / 4) * 3
+            const fechaOptima = new Date(fechaInicio.getTime() + triple)
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else {
@@ -383,10 +384,10 @@ const asignarTarea = async (req, res) => {
             await UsuarioTareaEquipo.create(dataUsuarioTareaEquipo)
 
             // Incrementamos las tareas asignadas
-            const adicion = usuarioEnEquipo.dataValues.tareas_asignadas + 1
+            const adicion = usuarioEnEquipo.dataValues.tareas_asignadas
             await UsuarioEquipo.update(
-                { tareas_asignadas: adicion },
-                { where: { id_usuario_fk_UE: usuarioEncontrado.dataValues.id_usuario, id_equipo_fk_UE: id_equipo }}
+                { tareas_asignadas: adicion + 1 },
+                { where: { id_usuario_fk_UE: usuarioEnEquipo.dataValues.id_usuario_fk_UE, id_equipo_fk_UE: id_equipo }}
             )
 
             /* Se les notifica sobre la tarea asignada */
@@ -494,7 +495,7 @@ const editarTarea = async (req, res) => {
         // Calculamos la fecha óptima (según dificultad)
         let fecha_optima_tarea = null
         if (req.body.dificultad_tarea === 'Fácil') {
-            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - ((fechaInicio.getTime()) / 4) * 3))
+            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - fechaInicio.getTime()) / 4)
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else if (req.body.dificultad_tarea === 'Media') {
@@ -502,7 +503,8 @@ const editarTarea = async (req, res) => {
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else if (req.body.dificultad_tarea === 'Difícil') {
-            const fechaOptima = new Date(fechaInicio.getTime() + (fechaFin.getTime() - fechaInicio.getTime()) / 4)
+            const triple = ((fechaFin.getTime() - fechaInicio.getTime()) / 4) * 3
+            const fechaOptima = new Date(fechaInicio.getTime() + triple)
             fecha_optima_tarea = fechaOptima.toISOString()
         }
         else {
@@ -677,14 +679,6 @@ const cambiarEstado = async (req, res) => {
         // Verificamos que la tarea no haya sido revisada antes
         if (tareaEncontrada.dataValues.dificultad_tarea === 'Revisada') {
             return res.status(500).json({ error: 'La tarea ya ha sido revisada' })
-        }
-
-        // Verificamos que la fecha de inicio de la tarea ya haya llegado
-        const start = Math.round(new Date(tareaEncontrada.dataValues.fecha_inicio_tarea).getTime() / 1000)
-        const now = Math.round(Date.now() / 1000)
-        if ((now - start) <= 0) {
-            console.log('Esta tarea aún no puede entregarse')
-            return res.status(500).json({ error: 'Esta tarea aún no puede entregarse' })
         }
 
         // Verificamos que el usuario tenga asignada la tarea o que sea un líder
