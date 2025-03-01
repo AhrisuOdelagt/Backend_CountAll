@@ -374,8 +374,7 @@ const asignarRoles = async (req, res) => {
 
         // Verificamos que el usuario se encuentre en el equipo
         const usuarioEncontrado = await Usuario.findOne({
-            where: { nombre_usuario: req.body.nombre_usuario },
-            attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
+            where: { nombre_usuario: req.body.nombre_usuario }
         })
         if (!usuarioEncontrado) {
             return res.status(500).json({ error: 'Este usuario no existe' })
@@ -402,6 +401,7 @@ const asignarRoles = async (req, res) => {
         const email_lider = req.usuario.dataValues.email_usuario
         // Verificamos el permiso del usuario en cuestión
         const pref_actividades = usuarioEncontrado.dataValues.pref_actividades
+        console.log(pref_actividades)
         if (pref_actividades) {
             try {
                 // Envío del correo de confirmación
@@ -544,7 +544,6 @@ const eliminarMiembro = async (req, res) => {
         // Encontramos al usuario
         const usuarioEncontrado = await Usuario.findOne({
             where: { nombre_usuario: req.body.nombre_usuario },
-            attributes: ['id_usuario', 'nombre_usuario', 'email_usuario']
         })
         if (!usuarioEncontrado) {
             return res.status(404).json({ error: 'Usuario no encontrado' })

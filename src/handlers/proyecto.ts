@@ -66,7 +66,7 @@ const verProyecto = async (req, res) => {
         // Obtenemos la estimación asociada con el proyecto
         const estimacionesProyecto = await Estimacion.findOne({
             where: { id_estimacion_fk_proyecto: proyectoEncontrado.dataValues.id_proyecto },
-            attributes: ['id_estimacion', 'puntos_funcion', 'loc', 'personas_estimacion', 'tiempo_estimacion', 'precio_estimacion']
+            attributes: ['id_estimacion']
         })
 
         // Verificamos que se haya encontrado un proyecto y lo enviamos de vuelta

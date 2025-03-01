@@ -1065,7 +1065,7 @@ const revisarTarea = async (req, res) => {
                             nombre_asignado: usuarioEncontrado.dataValues.nombre_usuario,
                             nombre_tarea: tareaEncontrada.dataValues.nombre_tarea,
                             nombre_equipo: equipo.dataValues.nombre_equipo,
-                            puntaje_obtenido: puntaje_obtenido
+                            puntaje_obtenido: puntaje_obtenido.dataValues.puntuacion_local
                         })
                     }
                 } catch (error) {
