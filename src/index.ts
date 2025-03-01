@@ -5,11 +5,11 @@ npx tsx src/index.ts */
 import server from './server'
 import colors from 'colors'
 import dotenv from 'dotenv'
-import { russianRoulette } from './helpers/functions'
+// import { russianRoulette } from './helpers/functions'
 import { iniciarTareaCron } from './tasks/testcron'
 dotenv.config()
 
-russianRoulette()
+// russianRoulette()
 
 try {
     const port = process.env.PORT || 3000
