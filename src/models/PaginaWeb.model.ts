@@ -26,6 +26,9 @@ class PaginaWeb extends Model {
         type: DataType.STRING(256)
     })
     url_pagina: string;
+
+    @HasMany(() => PaginaBloqueada)
+    paginaBloqueadas: PaginaBloqueada[];
 }
 
 export default PaginaWeb;

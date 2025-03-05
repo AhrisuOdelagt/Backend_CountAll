@@ -38,6 +38,15 @@ class UsuarioTareaEquipo extends Model {
         type: DataType.INTEGER
     })
     id_equipo_fk_UTE: number;
+
+    @BelongsTo(() => Equipo)
+    equipo: Equipo;
+
+    @BelongsTo(() => Usuario)
+    usuario: Usuario;
+
+    @BelongsTo(() => Tarea)
+    tarea: Tarea;
 }
 
 export default UsuarioTareaEquipo;

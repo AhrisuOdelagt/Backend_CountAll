@@ -89,6 +89,12 @@ class Tarea extends Model {
         type: DataType.INTEGER
     })
     id_etapa_fk_tarea: number;
+
+    @HasMany(() => UsuarioTareaEquipo)
+    usuarioTareaEquipos: UsuarioTareaEquipo[];
+
+    @HasMany(() => Comentario)
+    comentarios: Comentario[];
 }
 
 export default Tarea;

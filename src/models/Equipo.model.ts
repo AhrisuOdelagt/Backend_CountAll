@@ -24,6 +24,15 @@ class Equipo extends Model {
         type: DataType.STRING(256)
     })
     descr_equipo: string;
+
+    @HasMany(() => UsuarioEquipo)
+    usuarioEquipos: UsuarioEquipo[];
+
+    @HasMany(() => UsuarioTareaEquipo)
+    usuarioTareaEquipos: UsuarioTareaEquipo[];
+
+    @BelongsToMany(() => Proyecto, () => EquipoProyecto)
+    proyectos: Proyecto[];
 }
 
 export default Equipo;

@@ -32,6 +32,9 @@ class Recompensa extends Model {
         field: 'url_avatar'
     })
     url_avatar: string;
+
+    @HasMany(() => UsuarioRecompensa)
+    usuarioRecompensas: UsuarioRecompensa[];
 }
 
 export default Recompensa;
