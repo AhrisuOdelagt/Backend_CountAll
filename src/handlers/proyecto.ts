@@ -1,5 +1,14 @@
 import { check, validationResult } from 'express-validator'
-import { UsuarioEquipo, Proyecto, Usuario, Equipo, Etapa, Tarea, Riesgo, Estimacion, EquipoProyecto, UsuarioTareaEquipo }from '../indexmodels';
+import Proyecto from '../models/Proyecto.model'
+import Usuario from '../models/Usuario.model'
+import Equipo from '../models/Equipo.model'
+import Etapa from '../models/Etapa.model'
+import Tarea from '../models/Tarea.model'
+import Riesgo from '../models/Riesgo.model'
+import Estimacion from '../models/Estimacion.model'
+import EquipoProyecto from '../models/EquipoProyecto.model'
+import UsuarioEquipo from '../models/UsuarioEquipo.model'
+import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model'
 import { emailProyectoModificado } from '../helpers/emails'
 
 const verProyectos = async(req, res) => {

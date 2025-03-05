@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { UsuarioEquipo, Usuario }from '../indexmodels';
+import UsuarioEquipo from '../models/UsuarioEquipo.model';
+import Usuario from '../models/Usuario.model';
 
 export const obtenerClasificaciones = async (req: Request, res: Response) => {
     const { id_equipo } = req.params;

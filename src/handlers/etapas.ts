@@ -1,7 +1,11 @@
 import { check, validationResult } from 'express-validator'
 import { Op } from 'sequelize';
-import { Etapa, Proyecto, Tarea, Usuario, EquipoProyecto, UsuarioEquipo }from '../indexmodels';
-
+import Proyecto from '../models/Proyecto.model'
+import Etapa from '../models/Etapa.model'
+import Tarea from '../models/Tarea.model'
+import Usuario from '../models/Usuario.model'
+import EquipoProyecto from '../models/EquipoProyecto.model'
+import UsuarioEquipo from '../models/UsuarioEquipo.model'
 import {
     emailEtapaAgregada,
     emailEtapaEliminada,

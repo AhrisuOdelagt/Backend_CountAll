@@ -1,5 +1,6 @@
 import { check, validationResult } from 'express-validator'
-import { Proyecto, Riesgo }from '../indexmodels';
+import Riesgo from '../models/Riesgo.model'
+import Proyecto from '../models/Proyecto.model'
 
 const crearRiesgo = async (req, res) => {
     // Verificamos una sesión iniciada
