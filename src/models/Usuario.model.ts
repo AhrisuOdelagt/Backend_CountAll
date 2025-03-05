@@ -100,24 +100,6 @@ class Usuario extends Model {
         type: DataType.BOOLEAN
     })
     pref_puntajes: boolean
-
-    @HasMany(() => UsuarioEquipo)
-    usuarioEquipos: UsuarioEquipo[];
-
-    @HasMany(() => UsuarioTareaEquipo)
-    usuarioTareaEquipos: UsuarioTareaEquipo[];
-
-    @HasMany(() => UsuarioRecompensa)
-    usuarioRecompensas: UsuarioRecompensa[];
-
-    @HasMany(() => PaginaBloqueada)
-    PaginaBloqueadas: PaginaBloqueada[];
-
-    @HasMany(() => Proyecto)
-    proyectos: Proyecto[];
-
-    @HasMany(() => Comentario)
-    comentarios: Comentario[];
 }
 
 export default Usuario;

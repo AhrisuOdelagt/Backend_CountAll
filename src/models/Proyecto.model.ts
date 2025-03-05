@@ -64,18 +64,6 @@ class Proyecto extends Model {
         type: DataType.INTEGER
     })
     id_usuario_fk_proyecto: number;
-
-    @HasMany(() => Etapa)
-    etapas: Etapa[];
-
-    @HasMany(() => Riesgo)
-    riesgos: Riesgo[];
-
-    @HasMany(() => Estimacion)
-    estimaciones: Estimacion[];
-
-    @BelongsToMany(() => Equipo, () => EquipoProyecto)
-    equipos: Equipo[];
 }
 
 export default Proyecto;

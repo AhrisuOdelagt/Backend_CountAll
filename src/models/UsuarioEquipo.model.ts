@@ -80,12 +80,6 @@ class UsuarioEquipo extends Model {
         type: DataType.INTEGER
     })
     id_equipo_fk_UE: number;
-
-    @BelongsTo(() => Usuario)
-    usuario: Usuario;
-
-    @BelongsTo(() => Equipo)
-    equipo: Equipo;
 }
 
 export default UsuarioEquipo;

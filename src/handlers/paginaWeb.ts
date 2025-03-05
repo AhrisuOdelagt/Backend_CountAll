@@ -1,8 +1,5 @@
 import { check, validationResult } from 'express-validator'
-import PaginaWeb from '../models/PaginaWeb.model'
-import PaginaBloqueada from '../models/PaginaBloqueada.model'
-import Equipo from '../models/Equipo.model'
-import UsuarioEquipo from '../models/UsuarioEquipo.model'
+import { UsuarioEquipo, PaginaWeb, PaginaBloqueada, Equipo }from '../indexmodels';
 import { normalizeUrl } from '../helpers/functions'
 
 const verPaginasBloqueadas = async (req, res) => {

@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import UsuarioRecompensa from '../models/UsuarioRecompensa.model';
-import Recompensa from '../models/Recompensa.model';
-import Usuario from '../models/Usuario.model';
+import { Recompensa, Usuario, UsuarioRecompensa }from '../indexmodels';
 
 const obtenerRecompensas = async (req, res) => {
     const usuario = req.usuario

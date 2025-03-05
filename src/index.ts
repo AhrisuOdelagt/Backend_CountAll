@@ -2,6 +2,7 @@
 npm i -D tsx
 npx tsx src/index.ts */
 
+import 'reflect-metadata'
 import server from './server'
 import colors from 'colors'
 import dotenv from 'dotenv'

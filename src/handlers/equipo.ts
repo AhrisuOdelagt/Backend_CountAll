@@ -4,16 +4,7 @@ import {
     emailEquipoRolModificado,
     emailEquipoMiembroEliminado
 } from '../helpers/emails'
-import Equipo from '../models/Equipo.model'
-import Proyecto from '../models/Proyecto.model'
-import Usuario from '../models/Usuario.model'
-import EquipoProyecto from '../models/EquipoProyecto.model'
-import UsuarioEquipo from '../models/UsuarioEquipo.model'
-import PaginaBloqueada from '../models/PaginaBloqueada.model'
-import PaginaWeb from '../models/PaginaWeb.model'
-import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model'
-import Etapa from '../models/Etapa.model'
-import Tarea from '../models/Tarea.model'
+import { Tarea, Usuario, Equipo, Proyecto, EquipoProyecto, UsuarioEquipo, PaginaBloqueada, PaginaWeb, Etapa }from '../indexmodels';
 
 const verEquipos = async (req, res) => {
     // Verificamos una sesión iniciada

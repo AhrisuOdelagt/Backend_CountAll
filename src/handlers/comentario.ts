@@ -1,7 +1,5 @@
 import { check, validationResult } from 'express-validator'
-import Comentario from '../models/Comentario.model'
-import Tarea from '../models/Tarea.model'
-import Usuario from '../models/Usuario.model'
+import { Tarea, Usuario, Comentario }from '../indexmodels';
 
 const verComentarios = async (req, res) => {
     // Verificamos una sesión iniciada

@@ -1,13 +1,6 @@
 import { check, validationResult } from 'express-validator'
 import colors from 'colors'
-import Tarea from '../models/Tarea.model'
-import EquipoProyecto from '../models/EquipoProyecto.model'
-import Proyecto from '../models/Proyecto.model'
-import Etapa from '../models/Etapa.model'
-import Equipo from '../models/Equipo.model'
-import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model'
-import UsuarioEquipo from '../models/UsuarioEquipo.model'
-import Usuario from '../models/Usuario.model'
+import { Proyecto, Tarea, EquipoProyecto, Etapa, Equipo, UsuarioTareaEquipo, UsuarioEquipo, Usuario }from '../indexmodels';
 import {
     NOX,
     NOX_Po,

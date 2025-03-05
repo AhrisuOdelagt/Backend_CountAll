@@ -25,12 +25,6 @@ class UsuarioRecompensa extends Model {
         type: DataType.INTEGER
     })
     id_recompensa_fk_UR: number;
-
-    @BelongsTo(() => Usuario)
-    usuario: Usuario;
-
-    @BelongsTo(() => Recompensa)
-    recompensa: Recompensa;
 }
 
 export default UsuarioRecompensa;

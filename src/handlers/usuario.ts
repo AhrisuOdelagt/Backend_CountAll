@@ -4,9 +4,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 /* Importación de módulos propios del proyecto */
-import Usuario from "../models/Usuario.model"
-import UsuarioRecompensa from '../models/UsuarioRecompensa.model'
-import Recompensa from '../models/Recompensa.model'
+import { Recompensa, Usuario, UsuarioRecompensa }from '../indexmodels';
 import { generarTokenAleatorio } from '../helpers/functions'
 import {
     emailRegistro,

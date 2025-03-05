@@ -4,6 +4,20 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 /* Importación de los modelos */
 import Usuario from '../models/Usuario.model';
+import Tarea from '../models/Tarea.model';
+import Estimacion from '../models/Estimacion.model';
+import Etapa from '../models/Etapa.model';
+import PaginaWeb from '../models/PaginaWeb.model';
+import Proyecto from '../models/Proyecto.model';
+import Recompensa from '../models/Recompensa.model';
+import Riesgo from '../models/Riesgo.model';
+import Equipo from '../models/Equipo.model';
+import Comentario from '../models/Comentario.model';
+import EquipoProyecto from '../models/EquipoProyecto.model';
+import PaginaBloqueada from '../models/PaginaBloqueada.model';
+import UsuarioRecompensa from '../models/UsuarioRecompensa.model';
+import UsuarioEquipo from '../models/UsuarioEquipo.model';
+import UsuarioTareaEquipo from '../models/UsuarioTareaEquipo.model';
 
 dotenv.config();
 
@@ -17,6 +31,6 @@ const db = new Sequelize(process.env.DB_URI!, {
 });
 
 /* Carga manual de los modelos para evitar errores */
-db.addModels([Usuario])
+db.addModels([Usuario, Tarea, Estimacion, Etapa, PaginaWeb, Proyecto, Recompensa, Riesgo, Equipo, Comentario, EquipoProyecto, PaginaBloqueada, UsuarioRecompensa, UsuarioEquipo, UsuarioTareaEquipo])
 
 export default db

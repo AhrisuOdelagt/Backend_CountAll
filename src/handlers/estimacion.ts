@@ -1,6 +1,5 @@
 import { check, validationResult, body } from 'express-validator'
-import Estimacion from '../models/Estimacion.model'
-import Proyecto from '../models/Proyecto.model'
+import { Estimacion, Proyecto }from '../indexmodels';
 
 const realizarCOCOMO = async (req, res) => {
     // Verificamos una sesión iniciada
