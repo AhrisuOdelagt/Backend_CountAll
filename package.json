@@ -4,8 +4,9 @@
   "description": "API Backend para la aplicación CountAll",
   "main": "index.js",
   "scripts": {
-    "start": "tsx src/index.ts",
-    "dev": "nodemon --exec tsx src/index.ts"
+  "start": "node dist/index.js",
+  "dev": "nodemon --exec tsx src/index.ts",
+  "build": "tsc"
   },
   "author": "Ahrisu Cinderella",
   "license": "ISC",
